@@ -1,4 +1,4 @@
-# Production-Grade Project Management Tool — System Design
+# Projectec — System Design
 
 > **Target:** YouTrack/Linear-grade SaaS product  
 > **Stack:** FastAPI · React/TypeScript/Tailwind · PostgreSQL · Redis · S3  
