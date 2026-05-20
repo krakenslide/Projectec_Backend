@@ -23,7 +23,7 @@ from .service import (
 )
 
 
-router = APIRouter(prefix="/projects", tags=["Projects"])
+router = APIRouter(prefix="/v1/projects", tags=["Projects"])
 
 
 @router.post("/", response_model=ProjectResponse)

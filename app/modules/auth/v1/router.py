@@ -6,7 +6,7 @@ from .schemas import RegisterRequest, LoginRequest, AuthResponse
 from .service import create_user, get_user_by_email, verify_password, create_access_token
 from .deps import get_current_user
 
-router = APIRouter(prefix="/auth", tags=["Auth"])
+router = APIRouter(prefix="/v1/auth", tags=["Auth"])
 
 @router.post("/register", response_model=AuthResponse)
 async def register(request: RegisterRequest, db: AsyncSession = Depends(get_db)):
