@@ -8,7 +8,7 @@ from app.modules.auth.deps import get_current_user
 from .schemas import CreateIssueRequest, IssueResponse, UpdateIssueStatusRequest, UpdateIssueRequest, MoveIssueRequest
 from .service import create_issue, get_issues_by_project, update_issue_status, delete_issue, update_issue, move_issue
 
-router = APIRouter(prefix="/issues", tags=["Issues"])
+router = APIRouter(prefix="/v1/issues", tags=["Issues"])
 
 @router.post("/", response_model=IssueResponse)
 async def create(data: CreateIssueRequest, db: AsyncSession = Depends(get_db), current_user=Depends(get_current_user)):
