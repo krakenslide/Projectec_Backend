@@ -13,7 +13,7 @@ from .schemas import (
     UpdateProjectRequest,
 )
 
-from .service import (
+from ..service import (
     create_project,
     get_projects_by_user,
     get_project_board,

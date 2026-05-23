@@ -7,7 +7,7 @@ from app.core.deps import get_db
 from app.modules.auth.deps import get_current_user
 
 from .schemas import CreateOrganizationRequest, OrganizationResponse, AddOrganizationMemberRequest, OrganizationMemberResponse, OrganizationMemberUserResponse
-from .service import (create_organization, get_organizations_for_user, get_organization_for_user_by_id, add_organization_member, list_organization_members, remove_organization_member) 
+from ..service import (create_organization, get_organizations_for_user, get_organization_for_user_by_id, add_organization_member, list_organization_members, remove_organization_member) 
 
 router = APIRouter(prefix="/v1/organizations", tags=["Organizations"])
 
