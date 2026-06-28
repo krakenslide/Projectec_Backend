@@ -1,9 +1,9 @@
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
-
-from .models import Issue
-from app.modules.projects.models import Project 
+from app.models import Ticket as Issue
+from app.models import Project 
+from app.modules.mailer.notifications import send_email_notification
 
 async def create_issue(db: AsyncSession, data, user_id):
     project_result = await db.execute(
@@ -120,6 +120,13 @@ async def move_issue(db: AsyncSession, issue_id, status: str, position: int, use
     
     issue.status = status
     issue.position = position
+    #########celery send email function############
+    # Queue email
+    send_email_notification.delay(
+        recipient="akash@gmail.com",
+        subject="Issue Moved",
+        message=f"Issue {issue.id} moved to {status}"
+    )
     
     await db.commit()
     await db.refresh(issue)

@@ -2,53 +2,179 @@ from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 import re
-from .models import Organization, OrganizationMember
-from app.modules.auth.models import User
+from app.models import Organization 
+from app.models import Organization  as OrganizationMember
+from app.models import User
+from app.models.role import Role
+from app.models.user_organization import UserOrganization
+from app.modules.organizations.v1.schemas import CreateOrganizationRequest, OrganizationResponse
+from sqlalchemy.exc import IntegrityError
 
-def generate_slug(name: str) -> str:
-    slug = name.strip().lower()
-    slug = re.sub(r"[^a-z0-9]+", "-", slug)
-    slug = slug.strip("-")
+from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
 
-    return slug or "organization"
+from app.models.organization import Organization
+from app.models.permission import Permission
+from app.models.role import Role
+from app.models.role_permission import RolePermission
+from app.models.user_organization import UserOrganization
 
-async def create_organization(db: AsyncSession, data, user_id):
-    base_slug = generate_slug(data.name)
-    slug = base_slug
-    counter = 2
+from app.modules.organizations.rbac.permissions import PermissionName
+from app.modules.organizations.rbac.roles import RoleName
+from app.modules.organizations.rbac.seed_data import (
+    DEFAULT_ROLE_PERMISSIONS,
+)
 
-    while True:
-        existing_result = await db.execute(
-            select(Organization).where(Organization.slug == slug)
+from app.modules.organizations.v1.schemas import (
+    CreateOrganizationRequest,
+    OrganizationResponse,
+)
+
+async def create_organization(
+    db: AsyncSession,
+    request: CreateOrganizationRequest,
+    current_user_id,
+) -> OrganizationResponse:
+
+    existing = await db.scalar(
+        select(Organization).where(
+            Organization.name == request.name
         )
-        existing = existing_result.scalar_one_or_none()
-
-        if not existing:
-            break
-
-        slug = f"{base_slug}-{counter}"
-        counter += 1
-
-    organization = Organization(
-        name=data.name,
-        slug=slug,
-        owner_id=user_id,
     )
 
-    db.add(organization)
-    await db.flush()
+    if existing:
+        return OrganizationResponse(
+            success=False,
+            status_code=409,
+            message="Organization already exists.",
+            data=None,
+        )
 
-    member = OrganizationMember(
-        organization_id=organization.id,
-        user_id=user_id,
-        role="OWNER",
-    )
+    try:
 
-    db.add(member)
-    await db.commit()
-    await db.refresh(organization)
+        # =====================================================
+        # Create Organization
+        # =====================================================
 
-    return organization
+        organization = Organization(
+            name=request.name,
+            description=request.description,
+            created_by=current_user_id,
+        )
+
+        db.add(organization)
+
+        await db.flush()
+
+        # =====================================================
+        # Load Permissions
+        # =====================================================
+
+        permissions = await db.scalars(
+            select(Permission)
+        )
+
+        permission_map = {
+            permission.name: permission
+            for permission in permissions
+        }
+
+        # =====================================================
+        # Create Default Roles
+        # =====================================================
+
+        roles = {}
+
+        for role_name in RoleName:
+
+            role = Role(
+                organization_id=organization.id,
+                name=role_name.value,
+                created_by=current_user_id,
+            )
+
+            db.add(role)
+
+            await db.flush()
+
+            roles[role_name] = role
+
+        # =====================================================
+        # Assign Permissions to Roles
+        # =====================================================
+
+        for role_name, permission_names in DEFAULT_ROLE_PERMISSIONS.items():
+
+            role = roles[role_name]
+
+            for permission_name in permission_names:
+
+                permission = permission_map.get(
+                    permission_name.value
+                )
+
+                if permission is None:
+                    raise ValueError(
+                        f"Permission '{permission_name.value}' not found."
+                    )
+
+                db.add(
+                    RolePermission(
+                        role_id=role.id,
+                        permission_id=permission.id,
+                        created_by=current_user_id,
+                    )
+                )
+
+        await db.flush()
+
+        # =====================================================
+        # Make Creator Owner
+        # =====================================================
+
+        db.add(
+            UserOrganization(
+                user_id=current_user_id,
+                organization_id=organization.id,
+                role_id=roles[RoleName.OWNER].id,
+                created_by=current_user_id,
+            )
+        )
+
+        await db.commit()
+
+        await db.refresh(organization)
+
+        return OrganizationResponse(
+            success=True,
+            status_code=201,
+            message="Organization created successfully.",
+            data=None,
+        )
+
+    except IntegrityError:
+
+        await db.rollback()
+
+        return OrganizationResponse(
+            success=False,
+            status_code=409,
+            message="Integrity constraint violated.",
+            data=None,
+        )
+
+    except Exception as e:
+
+        await db.rollback()
+
+        return OrganizationResponse(
+            success=False,
+            status_code=500,
+            message=str(e),
+            data=None,
+        )
+
 async def get_organizations_for_user(db: AsyncSession, user_id):
     result = await db.execute(
         select(Organization)

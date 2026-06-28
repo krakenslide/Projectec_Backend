@@ -1,0 +1,16 @@
+User creation can have two pathways either he can wait to be invited to an Organization
+or he can create his own organization 
+which has the below pathway
+
+Organization creation becomes
+Create Organization
+        │
+        ▼
+Create Default Roles
+        │
+        ▼
+Assign Permissions
+        │
+        ▼
+Assign Creator as Owner
+

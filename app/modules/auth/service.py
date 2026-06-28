@@ -5,7 +5,7 @@ from sqlalchemy import select
 from datetime import datetime, timedelta, timezone
 import os
 import secrets
-from app.modules.auth.models import User
+from app.models import User
 from app.modules.mailer.service import send_verification_email
 
 SECRET_KEY = os.getenv("SECRET_KEY", "change-me-in-production")

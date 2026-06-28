@@ -3,13 +3,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.modules.auth.models import User
+from app.models import User
 from app.core.deps import get_db
 from .schemas import RegisterRequest, LoginRequest, AuthResponse, RegisterResponse
 from app.modules.auth.service import create_user, get_user_by_email, verify_password, create_access_token
 from app.modules.auth.deps import get_current_user
 from app.modules.mailer.service import is_valid_email
-from app.modules.auth.models import User
 from fastapi import Request
 from app.modules.auth.v1.google import oauth
 
@@ -25,8 +24,13 @@ async def register(request: RegisterRequest, db: AsyncSession = Depends(get_db))
         return RegisterResponse(success=False, status_code=400, message="Email Already Registered")
     
     response = await create_user(db, request.email, request.password)
+
+    if(response['success']==False):
+        return RegisterResponse(success=False, status_code=400, message=response['error'], data= {"email":request.email })
+
     #token = create_access_token(data={"sub": str(user.id)})  # use id not email
-    return RegisterResponse(success=True, status_code=201, message="Verification Email Sent", data= {"email":request.email, "id":response["user"].__dict__["id"]})
+    return RegisterResponse(success=True, status_code=201, message="Verification Email Sent", data= {"email":request.email, "id":response["user"].id})
+
 
 @router.post( "/login" , response_model = AuthResponse)
 async def login(request: LoginRequest, db: AsyncSession = Depends(get_db)):

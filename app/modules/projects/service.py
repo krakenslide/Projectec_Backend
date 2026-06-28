@@ -2,9 +2,9 @@ from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from .models import Project
-from app.modules.issues.models import Issue
-from app.modules.organizations.models import OrganizationMember
+from app.models import Project
+from app.models import Ticket as Issue
+from app.models import Organization as OrganizationMember
 
 
 async def ensure_user_in_organization(db: AsyncSession, organization_id, user_id):

@@ -6,12 +6,12 @@ from dotenv import load_dotenv
 load_dotenv()
 
 RESEND_API_KEY = os.getenv("RESEND_API_KEY")
+resend.api_key = RESEND_API_KEY
 
 
 async def send_verification_email(email: str, token: str):
-
     verification_link = (
-        f"http://localhost:8000/v1/auth/verify-email?token={token}"
+        f"http://127.0.0.1:8000/v1/auth/verify-email?token={token}"
     )
 
     try:
@@ -30,8 +30,6 @@ async def send_verification_email(email: str, token: str):
         })
 
         print("Email sent successfully")
-        print(response)
-
         return {
             "success": True,
             "data": response

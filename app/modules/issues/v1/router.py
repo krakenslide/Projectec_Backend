@@ -4,6 +4,7 @@ from uuid import UUID
 
 from app.core.deps import get_db
 from app.modules.auth.deps import get_current_user
+from app.modules.mailer.notifications import send_email_notification
 
 from .schemas import CreateIssueRequest, IssueResponse, UpdateIssueStatusRequest, UpdateIssueRequest, MoveIssueRequest
 from ..service import create_issue, get_issues_by_project, update_issue_status, delete_issue, update_issue, move_issue
@@ -23,8 +24,14 @@ async def update_status(issue_id: UUID, data: UpdateIssueStatusRequest, db: Asyn
     return await update_issue_status(db = db, issue_id = issue_id, status = data.status, user_id=current_user.id)
 
 @router.patch("/{issue_id}/move", response_model=IssueResponse)
-async def move(issue_id: UUID, data: MoveIssueRequest, db: AsyncSession = Depends(get_db), current_user=Depends(get_current_user)):
-    return await move_issue(db = db, issue_id = issue_id, status = data.status, position = data.position, user_id=current_user.id)
+async def move(issue_id: UUID, data: MoveIssueRequest, db: AsyncSession = Depends(get_db)):#, current_user=Depends(get_current_user)):
+    #current_user.id = "fsaef"
+    send_email_notification.delay(
+        recipient="akash@gmail.com",
+        subject="Issue Moved",
+        message="Issue waefwraef moved to awegrfrgeaw"
+    )
+    return await move_issue(db = db, issue_id = issue_id, status = data.status, position = data.position, user_id="fsaef")#current_user.id)
 
 @router.patch("/{issue_id}", response_model=IssueResponse)
 async def update(issue_id: UUID, data: UpdateIssueRequest, db: AsyncSession = Depends(get_db), current_user=Depends(get_current_user)):

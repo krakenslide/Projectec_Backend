@@ -7,15 +7,16 @@ from sqlalchemy import text
 from app.core.config import DB_SCHEMA
 from app.core.database import engine
 from app.models.base import Base
-from app.modules.auth.models import User  
+from app.models import User  
 from app.modules.auth.v1.router import router as auth_router
-from app.modules.projects.models import Project  
+from app.models import Project  
 from app.modules.projects.v1.router import router as projects_router
-from app.modules.issues.models import Issue
+from app.models import Ticket as Issue
 from app.modules.issues.v1.router import router as issues_router
-from app.modules.organizations.models import Organization, OrganizationMember
+from app.models import Organization 
 from app.modules.organizations.v1.router import router as organizations_router
 from starlette.middleware.sessions import SessionMiddleware
+
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -31,7 +32,7 @@ async def lifespan(app: FastAPI):
     yield
     # teardown goes here (close pools, etc.)
 
-app = FastAPI(title="Projectec", lifespan=lifespan)
+app = FastAPI(title="Jiffy", lifespan=lifespan)
 
 app.add_middleware(
     SessionMiddleware,
@@ -52,7 +53,6 @@ app.include_router(organizations_router)
 @app.get("/")
 async def root():
     return {"status": "running"}
-
 
 
 import uvicorn
