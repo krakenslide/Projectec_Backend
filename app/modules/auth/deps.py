@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.core.deps import get_db
-from app.modules.auth.models import User
+from app.models import User
 import uuid
 
 SECRET_KEY = "change-me-in-production"
