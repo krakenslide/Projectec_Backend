@@ -34,21 +34,21 @@ class Organization(Base, AuditMixin):
         nullable=True,
     )
 
-    users = relationship(
-        "UserOrganization",
-        back_populates="organization",
-        cascade="all, delete-orphan",
-    )
+    # users = relationship(
+    #     "UserOrganization",
+    #     back_populates="organization",
+    #     cascade="all, delete-orphan",
+    # )
 
-    projects = relationship(
-        "Project",
-        back_populates="organization",
-        cascade="all, delete-orphan",
-    )
+    # projects = relationship(
+    #     "Project",
+    #     back_populates="organization",
+    #     cascade="all, delete-orphan",
+    # )
     
-    roles = relationship(
-        "Role",
-        back_populates="organization",
-        foreign_keys="Role.organization_id",
-        cascade="all, delete-orphan",
-    )
+    # roles = relationship(
+    #     "Role",
+    #     back_populates="organization",
+    #     foreign_keys="Role.organization_id",
+    #     cascade="all, delete-orphan",
+    # )

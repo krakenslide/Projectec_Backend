@@ -5,17 +5,17 @@ from sqlalchemy import (
     ForeignKey,
     String,
     Text,
+    UniqueConstraint
 )
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
 
 from app.core.config import DB_SCHEMA
 from app.models.base import Base
 from app.models.mixins import AuditMixin
 
 
-class Activity(Base, AuditMixin):
-    __tablename__ = "activity"
+class UserProject(Base, AuditMixin):
+    __tablename__ = "user_project"
     __table_args__ = {"schema": DB_SCHEMA}
 
     id = Column(
@@ -24,9 +24,9 @@ class Activity(Base, AuditMixin):
         default=uuid.uuid4,
     )
 
-    ticket_id = Column(
+    project_id = Column(
         UUID(as_uuid=True),
-        ForeignKey(f"{DB_SCHEMA}.ticket.id"),
+        ForeignKey(f"{DB_SCHEMA}.project.id"),
         nullable=False,
         index=True,
     )
@@ -37,32 +37,17 @@ class Activity(Base, AuditMixin):
         nullable=False,
     )
 
-    action_type = Column(
-        String(50),
+    role_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey(f"{DB_SCHEMA}.role.id"),
         nullable=False,
     )
 
-    field_name = Column(
-        String(50),
-        nullable=True,
-    )
-
-    old_value = Column(
-        Text,
-        nullable=True,
-    )
-
-    new_value = Column(
-        Text,
-        nullable=True,
-    )
-
-    # ticket = relationship(
-    #     "Ticket",
-    #     back_populates="activities",
-    # )
-
-    # user = relationship(
-    #     "User",
-    #     foreign_keys=[user_id],
-    # )
+    __table_args__ = (
+    UniqueConstraint(
+        "project_id",
+        "user_id",
+        name="uq_project_user",
+    ),
+    {"schema": DB_SCHEMA},
+)

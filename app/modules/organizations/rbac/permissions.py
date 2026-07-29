@@ -1,15 +1,6 @@
 from enum import StrEnum
 
 class PermissionName(StrEnum):
-    """
-    System-wide permission identifiers.
-    Format:
-        <resource>:<action>
-    Example:
-        ticket:create
-        project:update
-        user:invite
-    """
     # ==========================================================
     # Organization
     # ==========================================================
@@ -18,6 +9,10 @@ class PermissionName(StrEnum):
     ORGANIZATION_CREATE = "organization:create"
     ORGANIZATION_UPDATE = "organization:update"
     ORGANIZATION_DELETE = "organization:delete"
+
+    ORGANIZATION_MEMBER_VIEW = "organization_member:view"
+    ORGANIZATION_MEMBER_ADD = "organization_member:add"
+    ORGANIZATION_MEMBER_REMOVE = "organization_member:remove"
 
     # ==========================================================
     # User
@@ -56,6 +51,10 @@ class PermissionName(StrEnum):
     PROJECT_CREATE = "project:create"
     PROJECT_UPDATE = "project:update"
     PROJECT_DELETE = "project:delete"
+
+    PROJECT_MEMBER_VIEW = "project_member:view"
+    PROJECT_MEMBER_ADD = "project_member:add"
+    PROJECT_MEMBER_REMOVE = "project_member:remove"
 
     # ==========================================================
     # Ticket

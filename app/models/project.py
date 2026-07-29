@@ -5,7 +5,9 @@ from sqlalchemy import (
     ForeignKey,
     String,
     Text,
+    UniqueConstraint,
 )
+
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -40,14 +42,27 @@ class Project(Base, AuditMixin):
         Text,
         nullable=True,
     )
-
-    organization = relationship(
-        "Organization",
-        back_populates="projects",
+    code = Column(
+        String(10),
+        nullable=False,
     )
 
-    tickets = relationship(
-        "Ticket",
-        back_populates="project",
-        cascade="all, delete-orphan",
-    )
+    __table_args__ = (
+    UniqueConstraint(
+        "organization_id",
+        "name",
+        name="uq_project_organization_name",
+    ),
+    {"schema": DB_SCHEMA},
+)
+
+    # organization = relationship(
+    #     "Organization",
+    #     back_populates="projects",
+    # )
+
+    # tickets = relationship(
+    #     "Ticket",
+    #     back_populates="project",
+    #     cascade="all, delete-orphan",
+    # )

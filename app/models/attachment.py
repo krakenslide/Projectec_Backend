@@ -86,17 +86,17 @@ class Attachment(Base, AuditMixin, SoftDeleteMixin):
         nullable=False,
     )
 
-    ticket = relationship(
-        "Ticket",
-        back_populates="attachments",
-    )
+    # ticket = relationship(
+    #     "Ticket",
+    #     back_populates="attachments",
+    # )
 
-    comment = relationship(
-        "Comment",
-        back_populates="attachments",
-    )
+    # comment = relationship(
+    #     "Comment",
+    #     back_populates="attachments",
+    # )
 
-    uploader = relationship(
-        "User",
-        foreign_keys=[uploaded_by],
-    )
+    # uploader = relationship(
+    #     "User",
+    #     foreign_keys=[uploaded_by],
+    # )

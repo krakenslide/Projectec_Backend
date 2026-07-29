@@ -30,8 +30,8 @@ class Permission(Base, AuditMixin):
         nullable=True,
     )
 
-    roles = relationship(
-        "RolePermission",
-        back_populates="permission",
-        cascade="all, delete-orphan",
-    )
+    # roles = relationship(
+    #     "RolePermission",
+    #     back_populates="permission",
+    #     cascade="all, delete-orphan",
+    # )

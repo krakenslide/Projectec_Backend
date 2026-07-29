@@ -1,17 +1,19 @@
 from .permissions import PermissionName
-from .roles import RoleName
+from .roles import OrganizationRole, ProjectRole
 
-DEFAULT_ROLES = [ role.value for role in RoleName ]
+DEFAULT_PERMISSIONS = [permission.value for permission in PermissionName]
 
-DEFAULT_PERMISSIONS = [ permission.value for permission in PermissionName ]
+DEFAULT_ORGANIZATION_ROLE_PERMISSIONS = {
 
-DEFAULT_ROLE_PERMISSIONS = {
-
-    RoleName.OWNER: [
+    OrganizationRole.OWNER: [
         PermissionName.ORGANIZATION_VIEW,
         PermissionName.ORGANIZATION_CREATE,
         PermissionName.ORGANIZATION_UPDATE,
         PermissionName.ORGANIZATION_DELETE,
+
+        PermissionName.ORGANIZATION_MEMBER_VIEW,
+        PermissionName.ORGANIZATION_MEMBER_ADD,
+        PermissionName.ORGANIZATION_MEMBER_REMOVE,
 
         PermissionName.USER_VIEW,
         PermissionName.USER_CREATE,
@@ -25,24 +27,28 @@ DEFAULT_ROLE_PERMISSIONS = {
         PermissionName.ROLE_DELETE,
         PermissionName.ROLE_ASSIGN,
 
-        PermissionName.PROJECT_VIEW,
+        PermissionName.TEAM_VIEW,
+        PermissionName.TEAM_CREATE,
+        PermissionName.TEAM_UPDATE,
+        PermissionName.TEAM_DELETE,
+
         PermissionName.PROJECT_CREATE,
-        PermissionName.PROJECT_UPDATE,
         PermissionName.PROJECT_DELETE,
 
-        PermissionName.TICKET_VIEW,
-        PermissionName.TICKET_CREATE,
-        PermissionName.TICKET_UPDATE,
-        PermissionName.TICKET_ASSIGN,
-        PermissionName.TICKET_CLOSE,
-        PermissionName.TICKET_REOPEN,
-        PermissionName.TICKET_DELETE,
+        PermissionName.DASHBOARD_VIEW,
+        PermissionName.REPORT_VIEW,
+        PermissionName.REPORT_EXPORT,
+
+        PermissionName.AUDIT_LOG_VIEW,
     ],
 
-    RoleName.ADMINISTRATOR: [
-
+    OrganizationRole.ADMINISTRATOR: [
         PermissionName.ORGANIZATION_VIEW,
         PermissionName.ORGANIZATION_UPDATE,
+
+        PermissionName.ORGANIZATION_MEMBER_VIEW,
+        PermissionName.ORGANIZATION_MEMBER_ADD,
+        PermissionName.ORGANIZATION_MEMBER_REMOVE,
 
         PermissionName.USER_VIEW,
         PermissionName.USER_CREATE,
@@ -55,10 +61,32 @@ DEFAULT_ROLE_PERMISSIONS = {
         PermissionName.ROLE_UPDATE,
         PermissionName.ROLE_ASSIGN,
 
-        PermissionName.PROJECT_VIEW,
+        PermissionName.TEAM_VIEW,
+        PermissionName.TEAM_CREATE,
+        PermissionName.TEAM_UPDATE,
+
         PermissionName.PROJECT_CREATE,
+
+        PermissionName.DASHBOARD_VIEW,
+        PermissionName.REPORT_VIEW,
+    ],
+
+    OrganizationRole.MEMBER: [
+        PermissionName.ORGANIZATION_VIEW,
+        PermissionName.DASHBOARD_VIEW,
+    ],
+}
+
+
+DEFAULT_PROJECT_ROLE_PERMISSIONS = {
+
+    ProjectRole.PROJECT_OWNER: [
+        PermissionName.PROJECT_VIEW,
         PermissionName.PROJECT_UPDATE,
-        PermissionName.PROJECT_DELETE,
+
+        PermissionName.PROJECT_MEMBER_VIEW,
+        PermissionName.PROJECT_MEMBER_ADD,
+        PermissionName.PROJECT_MEMBER_REMOVE,
 
         PermissionName.TICKET_VIEW,
         PermissionName.TICKET_CREATE,
@@ -67,12 +95,34 @@ DEFAULT_ROLE_PERMISSIONS = {
         PermissionName.TICKET_CLOSE,
         PermissionName.TICKET_REOPEN,
         PermissionName.TICKET_DELETE,
+
+        PermissionName.COMMENT_VIEW,
+        PermissionName.COMMENT_CREATE,
+        PermissionName.COMMENT_UPDATE,
+        PermissionName.COMMENT_DELETE,
+
+        PermissionName.ATTACHMENT_VIEW,
+        PermissionName.ATTACHMENT_UPLOAD,
+        PermissionName.ATTACHMENT_DELETE,
+
+        PermissionName.LABEL_VIEW,
+        PermissionName.LABEL_CREATE,
+        PermissionName.LABEL_UPDATE,
+        PermissionName.LABEL_DELETE,
+
+        PermissionName.WORKFLOW_VIEW,
+        PermissionName.WORKFLOW_CREATE,
+        PermissionName.WORKFLOW_UPDATE,
+        PermissionName.WORKFLOW_DELETE,
     ],
 
-    RoleName.MANAGER: [
-
+    ProjectRole.PROJECT_ADMIN: [
         PermissionName.PROJECT_VIEW,
         PermissionName.PROJECT_UPDATE,
+
+        PermissionName.PROJECT_MEMBER_VIEW,
+        PermissionName.PROJECT_MEMBER_ADD,
+        PermissionName.PROJECT_MEMBER_REMOVE,
 
         PermissionName.TICKET_VIEW,
         PermissionName.TICKET_CREATE,
@@ -80,39 +130,73 @@ DEFAULT_ROLE_PERMISSIONS = {
         PermissionName.TICKET_ASSIGN,
         PermissionName.TICKET_CLOSE,
         PermissionName.TICKET_REOPEN,
+
+        PermissionName.COMMENT_VIEW,
+        PermissionName.COMMENT_CREATE,
+        PermissionName.COMMENT_UPDATE,
+
+        PermissionName.ATTACHMENT_VIEW,
+        PermissionName.ATTACHMENT_UPLOAD,
+
+        PermissionName.LABEL_VIEW,
+        PermissionName.LABEL_CREATE,
+        PermissionName.LABEL_UPDATE,
+
+        PermissionName.WORKFLOW_VIEW,
+        PermissionName.WORKFLOW_UPDATE,
     ],
 
-    RoleName.ENGINEER: [
+    ProjectRole.ENGINEER: [
+        PermissionName.PROJECT_VIEW,
 
         PermissionName.TICKET_VIEW,
         PermissionName.TICKET_CREATE,
         PermissionName.TICKET_UPDATE,
         PermissionName.TICKET_CLOSE,
+
+        PermissionName.COMMENT_VIEW,
+        PermissionName.COMMENT_CREATE,
+        PermissionName.COMMENT_UPDATE,
+
+        PermissionName.ATTACHMENT_VIEW,
+        PermissionName.ATTACHMENT_UPLOAD,
     ],
 
-    RoleName.QA: [
+    ProjectRole.QA: [
+        PermissionName.PROJECT_VIEW,
 
         PermissionName.TICKET_VIEW,
         PermissionName.TICKET_UPDATE,
         PermissionName.TICKET_CLOSE,
         PermissionName.TICKET_REOPEN,
+
+        PermissionName.COMMENT_VIEW,
+        PermissionName.COMMENT_CREATE,
+
+        PermissionName.ATTACHMENT_VIEW,
+        PermissionName.ATTACHMENT_UPLOAD,
     ],
 
-    RoleName.REPORTER: [
+    ProjectRole.REPORTER: [
+        PermissionName.PROJECT_VIEW,
 
         PermissionName.TICKET_VIEW,
         PermissionName.TICKET_CREATE,
+
+        PermissionName.COMMENT_VIEW,
+        PermissionName.COMMENT_CREATE,
+
+        PermissionName.ATTACHMENT_VIEW,
+        PermissionName.ATTACHMENT_UPLOAD,
     ],
 
-    RoleName.VIEWER: [
-
-        PermissionName.ORGANIZATION_VIEW,
+    ProjectRole.VIEWER: [
         PermissionName.PROJECT_VIEW,
-        PermissionName.TICKET_VIEW,
-    ],
-
-    RoleName.GUEST: [
 
         PermissionName.TICKET_VIEW,
+
+        PermissionName.COMMENT_VIEW,
+
+        PermissionName.ATTACHMENT_VIEW,
     ],
 }

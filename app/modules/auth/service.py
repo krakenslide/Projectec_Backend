@@ -33,6 +33,7 @@ async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
 
 async def create_user(
     db: AsyncSession,
+    name: str,
     email: str,
     password: str
 ):
@@ -40,6 +41,7 @@ async def create_user(
     token = generate_verification_token()
 
     user = User(
+        name = name,
         email=email,
         password_hash=hash_password(password),
         verification_token=token,

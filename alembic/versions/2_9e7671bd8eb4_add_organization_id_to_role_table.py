@@ -6,7 +6,6 @@ Create Date: 2026-06-28 13:07:34.853987
 
 """
 from typing import Sequence, Union
-
 from alembic import op
 import sqlalchemy as sa
 
@@ -26,7 +25,6 @@ def upgrade() -> None:
         ["organization_id", "name"],
         schema="app",
     )
-    # ### end Alembic commands ###
 
 
 def downgrade() -> None:
@@ -39,4 +37,3 @@ def downgrade() -> None:
     )
     op.drop_constraint("fk_role_organization", 'role', schema='app', type_='foreignkey')
     op.drop_column('role', 'organization_id', schema='app')
-    # ### end Alembic commands ###

@@ -42,13 +42,13 @@ class Comment(Base, AuditMixin, SoftDeleteMixin):
         nullable=False,
     )
 
-    ticket = relationship(
-        "Ticket",
-        back_populates="comments",
-    )
+    # ticket = relationship(
+    #     "Ticket",
+    #     back_populates="comments",
+    # )
 
-    attachments = relationship(
-        "Attachment",
-        back_populates="comment",
-        cascade="all, delete-orphan",
-    )
+    # attachments = relationship(
+    #     "Attachment",
+    #     back_populates="comment",
+    #     cascade="all, delete-orphan",
+    # )

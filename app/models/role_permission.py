@@ -31,12 +31,12 @@ class RolePermission(Base, AuditMixin):
         nullable=False,
     )
 
-    role = relationship(
-        "Role",
-        back_populates="permissions",
-    )
+    # role = relationship(
+    #     "Role",
+    #     back_populates="permissions",
+    # )
 
-    permission = relationship(
-        "Permission",
-        back_populates="roles",
-    )
+    # permission = relationship(
+    #     "Permission",
+    #     back_populates="roles",
+    # )

@@ -71,8 +71,8 @@ class User(Base, AuditMixin, SoftDeleteMixin):
         nullable=False,
     )
 
-    organizations = relationship(
-        "UserOrganization",
-        back_populates="user",
-        foreign_keys="UserOrganization.user_id",
-        )
+    # organizations = relationship(
+    #     "UserOrganization",
+    #     back_populates="user",
+    #     foreign_keys="UserOrganization.user_id",
+    #     )

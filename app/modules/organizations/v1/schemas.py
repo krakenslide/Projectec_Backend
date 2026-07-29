@@ -1,11 +1,11 @@
 from datetime import datetime
 from typing import Literal
 from uuid import UUID
-from typing import Optional
+from typing import Optional, Any
 
 from pydantic import BaseModel, ConfigDict, Field
-
-OrganizationRole = Literal["OWNER", "ADMIN", "MEMBER","VIEWER"]
+from app.modules.organizations.rbac.roles import  OrganizationRole
+# OrganizationRole = Literal["OWNER", "ADMIN", "MEMBER","VIEWER"]
 
 # NOTE:
 # SQLAlchemy models represent the database schema.
@@ -53,7 +53,7 @@ class OrganizationResponse(BaseModel):
     success: bool
     status_code: int
     message: str
-    data: str | None = None
+    data:  list[dict[Any, Any]] | None = None
 
 class OrganizationMemberResponse(BaseModel):
     id: UUID
@@ -68,7 +68,7 @@ class OrganizationMemberResponse(BaseModel):
         
 class AddOrganizationMemberRequest(BaseModel):
     email: str
-    role: OrganizationRole = "MEMBER"
+    role: OrganizationRole = OrganizationRole.MEMBER
     
 class OrganizationMemberUserResponse(BaseModel):
     id: UUID
@@ -80,7 +80,7 @@ class OrganizationMemberUserResponse(BaseModel):
     updated_at: datetime
     
 
-#NOTE:
+# NOTE:
 # The Architecture for your project is below
 # HTTP Request
 #      │

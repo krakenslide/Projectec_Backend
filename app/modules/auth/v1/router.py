@@ -23,7 +23,7 @@ async def register(request: RegisterRequest, db: AsyncSession = Depends(get_db))
     if existing_user:
         return RegisterResponse(success=False, status_code=400, message="Email Already Registered")
     
-    response = await create_user(db, request.email, request.password)
+    response = await create_user(db, request.name, request.email, request.password)
 
     if(response['success']==False):
         return RegisterResponse(success=False, status_code=400, message=response['error'], data= {"email":request.email })

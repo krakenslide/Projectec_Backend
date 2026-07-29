@@ -3,18 +3,19 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
-
 from app.core.config import DB_SCHEMA
 from app.core.database import engine
 from app.models.base import Base
-from app.models import User  
 from app.modules.auth.v1.router import router as auth_router
+from app.models import User  
 from app.models import Project  
-from app.modules.projects.v1.router import router as projects_router
 from app.models import Ticket as Issue
-from app.modules.issues.v1.router import router as issues_router
 from app.models import Organization 
+from app.modules.tickets.v1.router import router as ticket_router
+from app.modules.users.v1.router import router as user_router
+from app.modules.projects.v1.router import router as projects_router
 from app.modules.organizations.v1.router import router as organizations_router
+from app.modules.auth.v1.router import router as auth_router
 from starlette.middleware.sessions import SessionMiddleware
 
 import os
@@ -27,10 +28,8 @@ SECRET_KEY = os.getenv("SESSION_SECRET_KEY")
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.execute(text(f'CREATE SCHEMA IF NOT EXISTS "{DB_SCHEMA}"'))
-        # await conn.run_sync(Base.metadata.create_all)
     print("📦 Tables registered:", list(Base.metadata.tables.keys()))
     yield
-    # teardown goes here (close pools, etc.)
 
 app = FastAPI(title="Jiffy", lifespan=lifespan)
 
@@ -46,9 +45,10 @@ app.add_middleware(
 )
 
 app.include_router(auth_router)
-app.include_router(projects_router)
-app.include_router(issues_router) 
+app.include_router(user_router)
 app.include_router(organizations_router)
+app.include_router(projects_router)
+app.include_router(ticket_router) 
 
 @app.get("/")
 async def root():

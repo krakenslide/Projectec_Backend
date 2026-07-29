@@ -50,21 +50,3 @@ class UserOrganization(Base, AuditMixin):
         ForeignKey(f"{DB_SCHEMA}.role.id"),
         nullable=False,
     )
-
-    user = relationship(
-        "User",
-        back_populates="organizations",
-        foreign_keys=[user_id],
-    )
-
-    organization = relationship(
-        "Organization",
-        back_populates="users",
-        foreign_keys=[organization_id],
-    )
-
-    role = relationship(
-        "Role",
-        back_populates="users",
-        foreign_keys=[role_id],
-    )

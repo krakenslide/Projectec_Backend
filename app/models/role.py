@@ -7,7 +7,13 @@ from sqlalchemy.orm import relationship
 from app.core.config import DB_SCHEMA
 from app.models.base import Base
 from app.models.mixins import AuditMixin
+from enum import StrEnum
+from sqlalchemy import Enum
 
+
+class RoleType(StrEnum):
+    ORGANIZATION = "organization"
+    PROJECT = "project"
 
 class Role(Base, AuditMixin):
     __tablename__ = "role"
@@ -30,31 +36,13 @@ class Role(Base, AuditMixin):
         nullable=True,
     )
 
-    permissions = relationship(
-        "RolePermission",
-        back_populates="role",
-        cascade="all, delete-orphan",
-    )
-
-    organization_id = Column(
-        UUID(as_uuid=True),
-        ForeignKey(f"{DB_SCHEMA}.organization.id"),
+    role_type = Column(
+        Enum(RoleType, native_enum=False),
         nullable=False,
     )
 
-    organization = relationship(
-        "Organization",
-        back_populates="roles",
-        foreign_keys=[organization_id],
-    )
 
-    users = relationship(
-        "UserOrganization",
-        back_populates="role",
-    )
-
-
-# NOTE
+# NOTE:
 # organization_id is for the database.
 # organization is for Python. "Whenever someone accesses role.organization, automatically fetch the Organization object using organization_id."
 
