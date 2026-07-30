@@ -25,7 +25,7 @@ async def seed_rbac():
                 select(Permission)
             )
         ).all()
-
+        
         permission_map = {
             permission.name: permission
             for permission in existing_permissions
@@ -110,7 +110,6 @@ async def seed_rbac():
         }
 
         # Seed Role Permissions
-
         existing_role_permissions = (
             await db.scalars(
                 select(RolePermission)
