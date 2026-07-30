@@ -14,13 +14,18 @@ from app.modules.tickets.v1.schemas import (
 )
 
 from app.modules.tickets.v1.service import (
-    create_project_ticket, list_project_tickets, get_project_ticket, update_project_ticket, delete_project_ticket
+    create_project_ticket,
+    list_project_tickets,
+    get_project_ticket,
+    update_project_ticket,
+    delete_project_ticket,
 )
 
 router = APIRouter(
     prefix="/v1",
     tags=["Ticket"],
 )
+
 
 @router.post(
     "/projects/{project_id}/tickets",
@@ -70,6 +75,7 @@ async def get_ticket(
         ticket_id=ticket_id,
         current_user=current_user,
     )
+
 
 @router.put(
     "/tickets/{ticket_id}",

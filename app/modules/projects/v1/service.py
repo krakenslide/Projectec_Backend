@@ -25,7 +25,6 @@ from app.modules.organizations.rbac.roles import (
 from app.core.schemas import APIResponse
 
 
-
 async def add_project_member(
     db: AsyncSession,
     project_id,
@@ -34,21 +33,17 @@ async def add_project_member(
 ) -> APIResponse[ProjectMemberSchema]:
 
     # Validate project exists
-    
-    project = await db.scalar(
-        select(Project).where(
-            Project.id == project_id
-        )
-    )
+
+    project = await db.scalar(select(Project).where(Project.id == project_id))
 
     if project is None:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
             detail="Project not found.",
         )
-    
+
     # Validate current user belongs to project
-    
+
     current_membership = await db.scalar(
         select(UserProject).where(
             UserProject.project_id == project_id,
@@ -63,9 +58,7 @@ async def add_project_member(
         )
 
     current_role = await db.scalar(
-        select(Role).where(
-            Role.id == current_membership.role_id
-        )
+        select(Role).where(Role.id == current_membership.role_id)
     )
 
     if current_role.name not in [
@@ -78,12 +71,8 @@ async def add_project_member(
         )
 
     # Find user
-    
-    user = await db.scalar(
-        select(User).where(
-            User.email == data.email
-        )
-    )
+
+    user = await db.scalar(select(User).where(User.email == data.email))
 
     if user is None:
         raise HTTPException(
@@ -92,7 +81,7 @@ async def add_project_member(
         )
 
     # Validate organization membership
-    
+
     organization_membership = await db.scalar(
         select(UserOrganization).where(
             UserOrganization.organization_id == project.organization_id,
@@ -107,7 +96,7 @@ async def add_project_member(
         )
 
     # Prevent duplicate membership
-    
+
     existing_member = await db.scalar(
         select(UserProject).where(
             UserProject.project_id == project_id,
@@ -122,21 +111,17 @@ async def add_project_member(
         )
 
     # Lookup role
-    
-    role = await db.scalar(
-        select(Role).where(
-            Role.name == data.role.value
-        )
-    )
+
+    role = await db.scalar(select(Role).where(Role.name == data.role.value))
 
     if role is None:
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
             detail="Invalid project role.",
         )
-    
+
     # Create membership
-    
+
     member = UserProject(
         project_id=project.id,
         user_id=user.id,
@@ -164,26 +149,21 @@ async def add_project_member(
     )
 
 
-
 async def list_project_members(
     db: AsyncSession,
     project_id,
     current_user_id,
 ) -> APIResponse[list[ProjectMemberSchema]]:
     # Validate project exists
-    
-    project = await db.scalar(
-        select(Project).where(
-            Project.id == project_id
-        )
-    )
+
+    project = await db.scalar(select(Project).where(Project.id == project_id))
 
     if project is None:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
             detail="Project not found.",
         )
-    
+
     # Validate current user belongs to project
 
     membership = await db.scalar(
@@ -246,7 +226,6 @@ async def list_project_members(
     )
 
 
-
 async def update_project_member_role(
     db: AsyncSession,
     project_id,
@@ -255,13 +234,8 @@ async def update_project_member_role(
     current_user_id,
 ) -> APIResponse[ProjectMemberSchema]:
     # Validate project exists
-    
 
-    project = await db.scalar(
-        select(Project).where(
-            Project.id == project_id
-        )
-    )
+    project = await db.scalar(select(Project).where(Project.id == project_id))
 
     if project is None:
         raise HTTPException(
@@ -300,7 +274,7 @@ async def update_project_member_role(
         )
 
     # Prevent self role update
-    
+
     if current_user_id == user_id:
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
@@ -321,9 +295,9 @@ async def update_project_member_role(
             status_code=HTTPStatus.NOT_FOUND,
             detail="Project member not found.",
         )
-    
+
     # Fetch target role
-    
+
     role = await db.scalar(
         select(Role).where(
             Role.name == data.role.value,
@@ -335,7 +309,7 @@ async def update_project_member_role(
             status_code=HTTPStatus.BAD_REQUEST,
             detail="Invalid role.",
         )
-    
+
     # Update role
 
     member.role_id = role.id
@@ -343,11 +317,7 @@ async def update_project_member_role(
     await db.commit()
     await db.refresh(member)
 
-    user = await db.scalar(
-        select(User).where(
-            User.id == member.user_id
-        )
-    )
+    user = await db.scalar(select(User).where(User.id == member.user_id))
 
     return APIResponse(
         success=True,
@@ -365,8 +335,6 @@ async def update_project_member_role(
     )
 
 
-
-
 async def remove_project_member(
     db: AsyncSession,
     project_id,
@@ -376,11 +344,7 @@ async def remove_project_member(
 
     # Validate project exists
 
-    project = await db.scalar(
-        select(Project).where(
-            Project.id == project_id
-        )
-    )
+    project = await db.scalar(select(Project).where(Project.id == project_id))
 
     if project is None:
         raise HTTPException(
@@ -427,7 +391,7 @@ async def remove_project_member(
         )
 
     # Fetch member
-    
+
     member = await db.scalar(
         select(UserProject).where(
             UserProject.project_id == project_id,
@@ -451,6 +415,7 @@ async def remove_project_member(
         data=None,
     )
 
+
 async def create_project(
     db: AsyncSession,
     organization_id,
@@ -459,11 +424,9 @@ async def create_project(
 ) -> APIResponse[ProjectSchema]:
 
     # Validate organization exists
-    
+
     organization = await db.scalar(
-        select(Organization).where(
-            Organization.id == organization_id
-        )
+        select(Organization).where(Organization.id == organization_id)
     )
 
     if organization is None:
@@ -475,8 +438,7 @@ async def create_project(
     # Validate user belongs to organization
 
     membership = await db.scalar(
-        select(UserOrganization)
-        .where(
+        select(UserOrganization).where(
             UserOrganization.organization_id == organization_id,
             UserOrganization.user_id == current_user_id,
         )
@@ -489,7 +451,7 @@ async def create_project(
         )
 
     # Allow only Owner / Administrator to create projects
-    
+
     role = await db.scalar(
         select(Role).where(
             Role.id == membership.role_id,
@@ -510,7 +472,7 @@ async def create_project(
             status_code=HTTPStatus.FORBIDDEN,
             detail="You don't have permission to create projects.",
         )
-    
+
     # Check duplicate project name
 
     existing_project = await db.scalar(
@@ -520,25 +482,23 @@ async def create_project(
         )
     )
 
-    #PROJECT CODE VALIDATION
+    # PROJECT CODE VALIDATION
     if existing_project:
         raise HTTPException(
             status_code=HTTPStatus.CONFLICT,
             detail="Project with this name already exists.",
         )
 
-    existing_project = await db.scalar(
-        select(Project).where(Project.code == data.code)
-        )
+    existing_project = await db.scalar(select(Project).where(Project.code == data.code))
 
     if existing_project:
         raise HTTPException(
             status_code=400,
             detail="Project code already exists.",
         )
-    
+
     # Create project
-    
+
     project = Project(
         organization_id=organization_id,
         name=data.name,
@@ -549,7 +509,7 @@ async def create_project(
     await db.flush()
 
     # Assign creator as Project Owner
-    
+
     project_owner_role = await db.scalar(
         select(Role).where(
             Role.name == ProjectRole.PROJECT_OWNER.value,
@@ -589,9 +549,7 @@ async def get_projects_for_organization(
     # Validate organization exists
 
     organization = await db.scalar(
-        select(Organization).where(
-            Organization.id == organization_id
-        )
+        select(Organization).where(Organization.id == organization_id)
     )
 
     if organization is None:
@@ -614,9 +572,9 @@ async def get_projects_for_organization(
             status_code=HTTPStatus.FORBIDDEN,
             detail="You are not a member of this organization.",
         )
-    
+
     # Fetch projects
-    
+
     result = await db.scalars(
         select(Project)
         .where(Project.organization_id == organization_id)
@@ -629,11 +587,9 @@ async def get_projects_for_organization(
         success=True,
         status_code=HTTPStatus.OK,
         message="Projects fetched successfully.",
-        data=[
-            ProjectSchema.model_validate(project)
-            for project in projects
-        ],
+        data=[ProjectSchema.model_validate(project) for project in projects],
     )
+
 
 async def get_project(
     db: AsyncSession,
@@ -641,19 +597,15 @@ async def get_project(
     current_user_id,
 ) -> APIResponse[ProjectSchema]:
     # Fetch project
-    
-    project = await db.scalar(
-        select(Project).where(
-            Project.id == project_id
-        )
-    )
+
+    project = await db.scalar(select(Project).where(Project.id == project_id))
 
     if project is None:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
             detail="Project not found.",
         )
-    
+
     # Validate user belongs to organization
 
     membership = await db.scalar(
@@ -684,12 +636,8 @@ async def update_project(
     current_user_id,
 ) -> APIResponse[ProjectSchema]:
     # Fetch project
-    
-    project = await db.scalar(
-        select(Project).where(
-            Project.id == project_id
-        )
-    )
+
+    project = await db.scalar(select(Project).where(Project.id == project_id))
 
     if project is None:
         raise HTTPException(
@@ -698,7 +646,7 @@ async def update_project(
         )
 
     # Validate user belongs to organization
-    
+
     membership = await db.scalar(
         select(UserOrganization).where(
             UserOrganization.organization_id == project.organization_id,
@@ -711,7 +659,7 @@ async def update_project(
             status_code=HTTPStatus.FORBIDDEN,
             detail="You are not a member of this organization.",
         )
-    
+
     # Allow only Owner / Administrator
 
     role = await db.scalar(
@@ -730,7 +678,7 @@ async def update_project(
         )
 
     # Duplicate name check
-    
+
     if data.name and data.name != project.name:
         existing_project = await db.scalar(
             select(Project).where(
@@ -761,18 +709,15 @@ async def update_project(
         data=ProjectSchema.model_validate(project),
     )
 
+
 async def delete_project(
     db: AsyncSession,
     project_id,
     current_user_id,
 ) -> APIResponse[None]:
     # Fetch project
-    
-    project = await db.scalar(
-        select(Project).where(
-            Project.id == project_id
-        )
-    )
+
+    project = await db.scalar(select(Project).where(Project.id == project_id))
 
     if project is None:
         raise HTTPException(

@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 
 DATABASE_URL = "postgresql+asyncpg://pmuser:Nagasiren99!@localhost:5432/pmtool"
 
+
 async def test():
     engine = create_async_engine(DATABASE_URL)
 
@@ -12,5 +13,6 @@ async def test():
         print(result.scalar())
 
     print("DB Connected!")
+
 
 asyncio.run(test())

@@ -27,7 +27,7 @@ from .service import (
     add_project_member,
     list_project_members,
     update_project_member_role,
-    remove_project_member
+    remove_project_member,
 )
 
 router = APIRouter(
@@ -118,7 +118,6 @@ async def delete(
         project_id=project_id,
         current_user_id=current_user.id,
     )
-
 
 
 @router.post(

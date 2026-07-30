@@ -6,7 +6,6 @@ from app.models.user import User
 from datetime import datetime
 
 
-
 class UserListRequest(BaseModel):
     organization_id: UUID | None = None
     project_id: UUID | None = None
@@ -35,6 +34,6 @@ class UserSchema(BaseModel):
     created_at: datetime
     updated_at: datetime
 
+
 class UserListResponse(APIResponse[list[UserSchema]]):
     pass
-

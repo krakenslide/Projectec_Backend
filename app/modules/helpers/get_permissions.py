@@ -6,6 +6,7 @@ from app.models.role_permission import RolePermission
 from app.models.user_organization import UserOrganization
 from sqlalchemy.ext.asyncio import AsyncSession
 
+
 async def get_user_permissions(
     db: AsyncSession,
     user_id,
@@ -28,12 +29,12 @@ async def get_user_permissions(
         )
         .distinct()
     )
-    print("DEBUG1: ",list(set(result.all())))
-    import time 
+    print("DEBUG1: ", list(set(result.all())))
+    import time
+
     time.sleep(5)
     print()
     return list(set(result.all()))
-
 
 
 async def get_roles_with_permissions(

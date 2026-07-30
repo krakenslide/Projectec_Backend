@@ -17,18 +17,14 @@ from app.modules.organizations.rbac.seed_data import (
     DEFAULT_PROJECT_ROLE_PERMISSIONS,
 )
 
+
 async def seed_rbac():
     async with AsyncSessionLocal() as db:
         # Seed Permissions
-        existing_permissions = (
-            await db.scalars(
-                select(Permission)
-            )
-        ).all()
+        existing_permissions = (await db.scalars(select(Permission))).all()
 
         permission_map = {
-            permission.name: permission
-            for permission in existing_permissions
+            permission.name: permission for permission in existing_permissions
         }
 
         permissions_inserted = 0
@@ -49,22 +45,13 @@ async def seed_rbac():
 
         permission_map = {
             permission.name: permission
-            for permission in (
-                await db.scalars(select(Permission))
-            ).all()
+            for permission in (await db.scalars(select(Permission))).all()
         }
-        
-        # Seed Roles
-        existing_roles = (
-            await db.scalars(
-                select(Role)
-            )
-        ).all()
 
-        role_map = {
-            role.name: role
-            for role in existing_roles
-        }
+        # Seed Roles
+        existing_roles = (await db.scalars(select(Role))).all()
+
+        role_map = {role.name: role for role in existing_roles}
 
         roles_inserted = 0
 
@@ -100,22 +87,10 @@ async def seed_rbac():
 
         await db.flush()
 
-        role_map = {
-            role.name: role
-            for role in (
-                await db.scalars(
-                    select(Role)
-                )
-            ).all()
-        }
+        role_map = {role.name: role for role in (await db.scalars(select(Role))).all()}
 
         # Seed Role Permissions
-
-        existing_role_permissions = (
-            await db.scalars(
-                select(RolePermission)
-            )
-        ).all()
+        existing_role_permissions = (await db.scalars(select(RolePermission))).all()
 
         existing_pairs = {
             (
@@ -137,18 +112,14 @@ async def seed_rbac():
             role = role_map.get(role_enum.value)
 
             if role is None:
-                raise ValueError(
-                    f"Role '{role_enum.value}' not found."
-                )
+                raise ValueError(f"Role '{role_enum.value}' not found.")
 
             for permission_enum in permissions:
 
                 permission = permission_map.get(permission_enum.value)
 
                 if permission is None:
-                    raise ValueError(
-                        f"Permission '{permission_enum.value}' not found."
-                    )
+                    raise ValueError(f"Permission '{permission_enum.value}' not found.")
 
                 pair = (
                     role.id,

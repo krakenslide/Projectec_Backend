@@ -5,14 +5,15 @@ Revises: 5e384d56a098
 Create Date: 2026-07-19 22:10:17.666039
 
 """
+
 from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
-revision: str = '077cd6f009c2'
-down_revision: Union[str, Sequence[str], None] = '5e384d56a098'
+revision: str = "077cd6f009c2"
+down_revision: Union[str, Sequence[str], None] = "5e384d56a098"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

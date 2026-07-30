@@ -30,7 +30,6 @@ from celery import Celery
 # It acts as the central configuration and coordination point for Celery.
 # -----------------------------------------------------------------------------
 celery_app = Celery(
-
     # Name of the Celery application.
     #
     # This is mainly used for identification in logs, monitoring tools,
@@ -39,7 +38,6 @@ celery_app = Celery(
     # It does NOT have to match your project name, but keeping it meaningful
     # makes debugging easier.
     "ticketing",
-
     # -------------------------------------------------------------------------
     # Broker URL
     #
@@ -81,7 +79,6 @@ celery_app = Celery(
     # In production this would usually come from environment variables.
     # -------------------------------------------------------------------------
     broker="amqp://guest:guest@localhost:5672//",
-
     # -------------------------------------------------------------------------
     # Result Backend
     #
@@ -122,7 +119,6 @@ celery_app = Celery(
 # and interpreted by workers.
 # -----------------------------------------------------------------------------
 celery_app.conf.update(
-
     # -------------------------------------------------------------------------
     # Task Serializer
     #
@@ -145,7 +141,6 @@ celery_app.conf.update(
     # Python code during deserialization.
     # -------------------------------------------------------------------------
     task_serializer="json",
-
     # -------------------------------------------------------------------------
     # Accepted Content Types
     #
@@ -160,7 +155,6 @@ celery_app.conf.update(
     # This prevents accidentally executing pickle payloads.
     # -------------------------------------------------------------------------
     accept_content=["json"],
-
     # -------------------------------------------------------------------------
     # Result Serializer
     #
@@ -174,7 +168,6 @@ celery_app.conf.update(
     # Again JSON is the safest option.
     # -------------------------------------------------------------------------
     result_serializer="json",
-
     # -------------------------------------------------------------------------
     # Timezone
     #
@@ -194,7 +187,6 @@ celery_app.conf.update(
     # Convert to the user's local timezone only when displaying times.
     # -------------------------------------------------------------------------
     timezone="UTC",
-
     # -------------------------------------------------------------------------
     # Enable UTC
     #
@@ -214,9 +206,7 @@ celery_app.conf.update(
     enable_utc=True,
 )
 
-celery_app.conf.imports = (
-    "app.modules.mailer.notifications",
-)
+celery_app.conf.imports = ("app.modules.mailer.notifications",)
 
 
 # celery_app.autodiscover_tasks(

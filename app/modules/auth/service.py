@@ -23,7 +23,9 @@ def verify_password(plain: str, hashed: str) -> bool:
 
 def create_access_token(data: dict) -> str:
     payload = data.copy()
-    payload["exp"] = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    payload["exp"] = datetime.now(timezone.utc) + timedelta(
+        minutes=ACCESS_TOKEN_EXPIRE_MINUTES
+    )
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
 
@@ -31,17 +33,13 @@ async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
     result = await db.execute(select(User).where(User.email == email))
     return result.scalar_one_or_none()
 
-async def create_user(
-    db: AsyncSession,
-    name: str,
-    email: str,
-    password: str
-):
+
+async def create_user(db: AsyncSession, name: str, email: str, password: str):
 
     token = generate_verification_token()
 
     user = User(
-        name = name,
+        name=name,
         email=email,
         password_hash=hash_password(password),
         verification_token=token,
@@ -54,24 +52,13 @@ async def create_user(
 
     await db.refresh(user)
 
-    response = await send_verification_email(
-        email,
-        token
-    )
+    response = await send_verification_email(email, token)
 
     if not response["success"]:
 
-        return {
-            "success": False,
-            "user": None,
-            "error": response["error"]
-        }
+        return {"success": False, "user": None, "error": response["error"]}
 
-    return {
-        "success": True,
-        "user": user,
-        "error": None
-    }
+    return {"success": True, "user": user, "error": None}
 
 
 def generate_verification_token():

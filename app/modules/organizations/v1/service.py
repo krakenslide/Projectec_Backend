@@ -2,11 +2,16 @@ from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 import re
-from app.models import Organization 
+from app.models import Organization
 from app.models import User
 from app.models.role import Role
 from app.models.user_organization import UserOrganization
-from app.modules.organizations.v1.schemas import CreateOrganizationRequest, OrganizationResponse, OrganizationMemberUserResponse, OrganizationMemberResponse
+from app.modules.organizations.v1.schemas import (
+    CreateOrganizationRequest,
+    OrganizationResponse,
+    OrganizationMemberUserResponse,
+    OrganizationMemberResponse,
+)
 from sqlalchemy.exc import IntegrityError
 
 from sqlalchemy import select
@@ -23,7 +28,8 @@ from app.modules.helpers.get_permissions import get_user_permissions
 from app.modules.organizations.rbac.permissions import PermissionName
 from app.modules.organizations.rbac.roles import ProjectRole, OrganizationRole
 from app.modules.organizations.rbac.seed_data import (
-    DEFAULT_ORGANIZATION_ROLE_PERMISSIONS, DEFAULT_PROJECT_ROLE_PERMISSIONS
+    DEFAULT_ORGANIZATION_ROLE_PERMISSIONS,
+    DEFAULT_PROJECT_ROLE_PERMISSIONS,
 )
 
 from app.modules.organizations.v1.schemas import (
@@ -42,9 +48,7 @@ async def create_organization(
 ) -> OrganizationResponse:
 
     existing = await db.scalar(
-        select(Organization).where(
-            Organization.name == request.name
-        )
+        select(Organization).where(Organization.name == request.name)
     )
 
     if existing:
@@ -66,15 +70,11 @@ async def create_organization(
         await db.flush()
 
         owner_role = await db.scalar(
-            select(Role).where(
-                Role.name == OrganizationRole.OWNER.value
-            )
+            select(Role).where(Role.name == OrganizationRole.OWNER.value)
         )
 
         if owner_role is None:
-            raise ValueError(
-                "Organization Owner role has not been seeded."
-            )
+            raise ValueError("Organization Owner role has not been seeded.")
 
         db.add(
             UserOrganization(
@@ -97,6 +97,7 @@ async def create_organization(
 
     except IntegrityError:
         import traceback
+
         traceback.print_exc()
 
         await db.rollback()
@@ -110,6 +111,7 @@ async def create_organization(
 
     except Exception as e:
         import traceback
+
         traceback.print_exc()
 
         await db.rollback()
@@ -120,7 +122,7 @@ async def create_organization(
             message=str(e),
             data=None,
         )
-    
+
 
 async def get_organizations_for_user(
     db: AsyncSession,
@@ -185,9 +187,12 @@ async def get_organization_membership(
 
     return membership, role
 
-async def require_organization_admin_or_owner(db: AsyncSession, organization_id, user_id):
+
+async def require_organization_admin_or_owner(
+    db: AsyncSession, organization_id, user_id
+):
     membership, role = await get_organization_membership(db, organization_id, user_id)
-    
+
     if role not in ["OWNER", "ADMIN"]:
         raise HTTPException(status_code=403, detail="Not allowed")
 
@@ -200,29 +205,35 @@ ROLE_NAME_MAP = {
     "MEMBER": "Member",
 }
 
-async def add_organization_member(db: AsyncSession, organization_id, data, current_user_id):
-    if(await require_organization_admin_or_owner(db, organization_id, current_user_id)==True):
+
+async def add_organization_member(
+    db: AsyncSession, organization_id, data, current_user_id
+):
+    if (
+        await require_organization_admin_or_owner(db, organization_id, current_user_id)
+        == True
+    ):
         user_result = await db.execute(select(User).where(User.email == data.email))
         user = user_result.scalar_one_or_none()
-        
+
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
-        
+
         existing_membership_result = await db.execute(
             select(UserOrganization)
             .where(UserOrganization.organization_id == organization_id)
             .where(UserOrganization.user_id == user.id)
         )
-        
+
         existing_membership = existing_membership_result.scalar_one_or_none()
-        
+
         if existing_membership:
-            raise HTTPException(status_code=400, detail="User is already a member of the organization")
-        
-        role = await db.scalar(
-            select(Role).where(
-                Role.name == ROLE_NAME_MAP[data.role]
+            raise HTTPException(
+                status_code=400, detail="User is already a member of the organization"
             )
+
+        role = await db.scalar(
+            select(Role).where(Role.name == ROLE_NAME_MAP[data.role])
         )
 
         member = UserOrganization(
@@ -230,13 +241,16 @@ async def add_organization_member(db: AsyncSession, organization_id, data, curre
             user_id=user.id,
             role_id=role.id,
         )
-        
+
         db.add(member)
         await db.commit()
         await db.refresh(member)
         return member
     else:
-        raise HTTPException(status_code=401, detail="User does not have the required permissions to add project members.")
+        raise HTTPException(
+            status_code=401,
+            detail="User does not have the required permissions to add project members.",
+        )
 
 
 async def list_organization_members(
@@ -258,9 +272,7 @@ async def list_organization_members(
             Role,
             Role.id == UserOrganization.role_id,
         )
-        .where(
-            UserOrganization.organization_id == organization_id
-        )
+        .where(UserOrganization.organization_id == organization_id)
     )
 
     members = []
@@ -279,7 +291,8 @@ async def list_organization_members(
         )
 
     return members
-    
+
+
 async def remove_organization_member(
     db: AsyncSession,
     organization_id,

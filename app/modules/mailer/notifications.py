@@ -1,12 +1,9 @@
 from app.celery_app import celery_app
 import requests
 
+
 @celery_app.task(queue="email")
-def send_email_notification(
-    recipient: str,
-    subject: str,
-    message: str
-):
+def send_email_notification(recipient: str, subject: str, message: str):
     print(f"Sending email to {recipient}")
     payload = {
         "recipient": recipient,

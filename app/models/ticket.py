@@ -79,7 +79,7 @@ class Ticket(Base, AuditMixin):
         String(30),
         nullable=False,
     )
-    
+
     ticket_number = Column(
         String(30),
         nullable=False,
