@@ -5,6 +5,7 @@ Revises: 9e7671bd8eb4
 Create Date: 2026-07-16 10:45:12.884217
 
 """
+
 from typing import Sequence, Union
 
 from alembic import op
@@ -14,8 +15,8 @@ from sqlalchemy.dialects import postgresql
 
 
 # revision identifiers, used by Alembic.
-revision: str = '5e384d56a098'
-down_revision: Union[str, Sequence[str], None] = '9e7671bd8eb4'
+revision: str = "5e384d56a098"
+down_revision: Union[str, Sequence[str], None] = "9e7671bd8eb4"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -43,13 +44,21 @@ def upgrade() -> None:
             postgresql.UUID(as_uuid=True),
             nullable=False,
         ),
-
         # AuditMixin columns
-        sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-        sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-        sa.Column('created_by', sa.UUID(), nullable=True),
-        sa.Column('updated_by', sa.UUID(), nullable=True),
-
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
+        sa.Column("created_by", sa.UUID(), nullable=True),
+        sa.Column("updated_by", sa.UUID(), nullable=True),
         sa.ForeignKeyConstraint(
             ["project_id"],
             [f"{DB_SCHEMA}.project.id"],
@@ -65,9 +74,7 @@ def upgrade() -> None:
             [f"{DB_SCHEMA}.role.id"],
             name="fk_user_project_role_id",
         ),
-
         sa.PrimaryKeyConstraint("id", name="pk_user_project"),
-
         schema=DB_SCHEMA,
     )
 

@@ -20,45 +20,11 @@ from app.scripts.seed.config import (
 from app.scripts.seed.context import SeedContext
 
 
-# ASSIGNEE_ROLES = {
-#     "Engineer",
-#     "QA",
-#     "Project Administrator",
-# }
-
-# REPORTER_ROLES = {
-#     "Project Owner",
-#     "Project Administrator",
-#     "Reporter",
-#     "QA",
-# }
-
-
-# def get_assignees(context: SeedContext, project_id):
-#     return [
-#         member.user
-#         for member in context.project_members[project_id]
-#         if member.role.name in ASSIGNEE_ROLES
-#     ]
-
-
-# def get_reporters(context: SeedContext, project_id):
-#     return [
-#         member.user
-#         for member in context.project_members[project_id]
-#         if member.role.name in REPORTER_ROLES
-#     ]
-
-
 def seed_tickets(
     db: Session,
     context: SeedContext,
     ticket_count: int | None = None,
 ) -> None:
-    """
-    Seed tickets for every project.
-    """
-
     tickets: list[Ticket] = []
 
     assignee_role_ids = {
@@ -77,9 +43,7 @@ def seed_tickets(
     for project in context.projects:
 
         memberships = (
-            db.query(UserProject)
-            .filter(UserProject.project_id == project.id)
-            .all()
+            db.query(UserProject).filter(UserProject.project_id == project.id).all()
         )
 
         assignees = [
@@ -114,25 +78,19 @@ def seed_tickets(
 
             expected_start = context.faker.date_time_this_year()
 
-            expected_end = expected_start + timedelta(
-                days=random.randint(2, 20)
-            )
+            expected_end = expected_start + timedelta(days=random.randint(2, 20))
 
             actual_start = None
             actual_end = None
 
             if status != TicketStatus.TODO:
-                actual_start = expected_start + timedelta(
-                    days=random.randint(0, 2)
-                )
+                actual_start = expected_start + timedelta(days=random.randint(0, 2))
 
             if status in (
                 TicketStatus.DONE,
                 TicketStatus.CLOSED,
             ):
-                actual_end = actual_start + timedelta(
-                    days=random.randint(1, 15)
-                )
+                actual_end = actual_start + timedelta(days=random.randint(1, 15))
 
             difficulty = random.randint(1, 100)
 
@@ -156,7 +114,7 @@ def seed_tickets(
                     difficulty // 5 + random.randint(-3, 5),
                 ),
                 demo_link=context.faker.url(),
-                ticket_number =context.faker.numerify("############")
+                ticket_number=context.faker.numerify("############"),
             )
 
             tickets.append(ticket)

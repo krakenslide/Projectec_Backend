@@ -17,30 +17,20 @@ async def list_users(
     request: UserListRequest,
     current_user: User,
 ) -> UserListResponse:
-    
+
     stmt = select(User).distinct()
 
     if request.organization_id:
-        stmt = (
-            stmt.join(
-                UserOrganization,
-                UserOrganization.user_id == User.id,
-            )
-            .where(
-                UserOrganization.organization_id == request.organization_id
-            )
-        )
+        stmt = stmt.join(
+            UserOrganization,
+            UserOrganization.user_id == User.id,
+        ).where(UserOrganization.organization_id == request.organization_id)
 
     if request.project_id:
-        stmt = (
-            stmt.join(
-                UserProject,
-                UserProject.user_id == User.id,
-            )
-            .where(
-                UserProject.project_id == request.project_id
-            )
-        )
+        stmt = stmt.join(
+            UserProject,
+            UserProject.user_id == User.id,
+        ).where(UserProject.project_id == request.project_id)
 
     if request.search:
         search = f"%{request.search}%"
@@ -67,8 +57,5 @@ async def list_users(
         success=True,
         status_code=200,
         message="Users fetched successfully.",
-        data=[
-            UserSchema.model_validate(user)
-            for user in users
-        ],
+        data=[UserSchema.model_validate(user) for user in users],
     )

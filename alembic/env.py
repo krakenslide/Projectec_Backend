@@ -37,6 +37,7 @@ target_metadata = Base.metadata
 # Tell Alembic which database objects should be included.
 # ------------------------------------------------------------------
 
+
 def include_object(object, name, type_, reflected, compare_to):
     """
     Only migrate objects that belong to our application schema.
@@ -53,6 +54,7 @@ def include_object(object, name, type_, reflected, compare_to):
 # Offline Migrations
 # ------------------------------------------------------------------
 
+
 def run_migrations_offline():
     """
     Generate SQL without connecting to the database.
@@ -65,29 +67,21 @@ def run_migrations_offline():
 
     context.configure(
         url=url,
-
         # SQLAlchemy metadata containing all ORM models.
         target_metadata=target_metadata,
-
         # Render literal values inside generated SQL.
         literal_binds=True,
-
         dialect_opts={
             "paramstyle": "named",
         },
-
         # Store alembic_version inside our schema.
         version_table_schema=DB_SCHEMA,
-
         # Compare all schemas instead of only public.
         include_schemas=True,
-
         # Ignore objects outside our schema.
         include_object=include_object,
-
         # Detect datatype changes.
         compare_type=True,
-
         # Detect server_default changes.
         compare_server_default=True,
     )
@@ -100,6 +94,7 @@ def run_migrations_offline():
 # Online Migrations
 # ------------------------------------------------------------------
 
+
 def do_run_migrations(connection):
     """
     Configure Alembic using an active database connection.
@@ -107,22 +102,16 @@ def do_run_migrations(connection):
 
     context.configure(
         connection=connection,
-
         # SQLAlchemy metadata.
         target_metadata=target_metadata,
-
         # Store alembic_version in our schema.
         version_table_schema=DB_SCHEMA,
-
         # Compare across schemas.
         include_schemas=True,
-
         # Ignore tables outside our schema.
         include_object=include_object,
-
         # Detect datatype modifications.
         compare_type=True,
-
         # Detect default value changes.
         compare_server_default=True,
     )
@@ -145,9 +134,7 @@ async def run_migrations_online():
     async with engine.begin() as connection:
 
         # Create the schema automatically if it doesn't exist.
-        await connection.execute(
-            text(f'CREATE SCHEMA IF NOT EXISTS "{DB_SCHEMA}"')
-        )
+        await connection.execute(text(f'CREATE SCHEMA IF NOT EXISTS "{DB_SCHEMA}"'))
 
         await connection.run_sync(do_run_migrations)
 
@@ -163,7 +150,7 @@ if context.is_offline_mode():
 else:
     asyncio.run(run_migrations_online())
 
-#import app.models magic explained
+# import app.models magic explained
 """
 Now Alembic executes
 import app.models

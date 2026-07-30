@@ -1,12 +1,6 @@
 import uuid
 
-from sqlalchemy import (
-    Column,
-    ForeignKey,
-    String,
-    Text,
-    UniqueConstraint
-)
+from sqlalchemy import Column, ForeignKey, String, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 
 from app.core.config import DB_SCHEMA
@@ -44,10 +38,10 @@ class UserProject(Base, AuditMixin):
     )
 
     __table_args__ = (
-    UniqueConstraint(
-        "project_id",
-        "user_id",
-        name="uq_project_user",
-    ),
-    {"schema": DB_SCHEMA},
-)
+        UniqueConstraint(
+            "project_id",
+            "user_id",
+            name="uq_project_user",
+        ),
+        {"schema": DB_SCHEMA},
+    )

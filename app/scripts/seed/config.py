@@ -1,8 +1,6 @@
 # app/seed/config.py
 
-DEFAULT_PASSWORD_HASH = (
-    "$2b$12$m3C2NbxMRF3d/9DMyQuWcuUvBVAtw/r2HwJq/lrluP8VAl80S/wiu"
-)
+DEFAULT_PASSWORD_HASH = "$2b$12$m3C2NbxMRF3d/9DMyQuWcuUvBVAtw/r2HwJq/lrluP8VAl80S/wiu"
 
 # Organization
 MIN_USERS_PER_ORGANIZATION = 5

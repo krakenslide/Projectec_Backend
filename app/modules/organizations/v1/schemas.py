@@ -4,7 +4,8 @@ from uuid import UUID
 from typing import Optional, Any
 
 from pydantic import BaseModel, ConfigDict, Field
-from app.modules.organizations.rbac.roles import  OrganizationRole
+from app.modules.organizations.rbac.roles import OrganizationRole
+
 # OrganizationRole = Literal["OWNER", "ADMIN", "MEMBER","VIEWER"]
 
 # NOTE:
@@ -17,12 +18,14 @@ from app.modules.organizations.rbac.roles import  OrganizationRole
 # Serializes Python objects back to JSON.
 # Generates OpenAPI documentation in FastAPI.
 
+
 class CreateOrganizationRequest(BaseModel):
     """
     Request schema for creating an organization.
     This model validates incoming data required to create a new organization.
     It represents the API contract and is independent of the database model.
     """
+
     name: str = Field(
         min_length=3,
         max_length=127,
@@ -49,11 +52,13 @@ class UpdateOrganizationRequest(BaseModel):
         max_length=500,
     )
 
+
 class OrganizationResponse(BaseModel):
     success: bool
     status_code: int
     message: str
-    data:  list[dict[Any, Any]] | None = None
+    data: list[dict[Any, Any]] | None = None
+
 
 class OrganizationMemberResponse(BaseModel):
     id: UUID
@@ -62,14 +67,16 @@ class OrganizationMemberResponse(BaseModel):
     role: OrganizationRole
     created_at: datetime
     updated_at: datetime
-    
+
     class Config:
         from_attributes = True
-        
+
+
 class AddOrganizationMemberRequest(BaseModel):
     email: str
     role: OrganizationRole = OrganizationRole.MEMBER
-    
+
+
 class OrganizationMemberUserResponse(BaseModel):
     id: UUID
     organization_id: UUID
@@ -78,7 +85,7 @@ class OrganizationMemberUserResponse(BaseModel):
     email: str
     created_at: datetime
     updated_at: datetime
-    
+
 
 # NOTE:
 # The Architecture for your project is below

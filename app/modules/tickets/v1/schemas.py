@@ -58,8 +58,6 @@ class CreateTicketRequest(BaseModel):
     )
 
 
-
-
 class UpdateTicketRequest(BaseModel):
     title: Optional[str] = Field(
         default=None,

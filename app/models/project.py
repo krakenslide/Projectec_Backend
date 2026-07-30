@@ -48,13 +48,13 @@ class Project(Base, AuditMixin):
     )
 
     __table_args__ = (
-    UniqueConstraint(
-        "organization_id",
-        "name",
-        name="uq_project_organization_name",
-    ),
-    {"schema": DB_SCHEMA},
-)
+        UniqueConstraint(
+            "organization_id",
+            "name",
+            name="uq_project_organization_name",
+        ),
+        {"schema": DB_SCHEMA},
+    )
 
     # organization = relationship(
     #     "Organization",

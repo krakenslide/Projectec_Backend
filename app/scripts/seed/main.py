@@ -10,7 +10,7 @@ def main():
             db=db,
             user_count=100,
             organization_count=10,
-            ticket_count=None,   # Random tickets per project
+            ticket_count=None,  # Random tickets per project
         )
     finally:
         db.close()

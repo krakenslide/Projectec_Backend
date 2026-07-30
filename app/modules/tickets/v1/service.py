@@ -3,15 +3,16 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.models.ticket import Ticket
-from app.models.project import Project 
+from app.models.project import Project
 from app.modules.mailer.notifications import send_email_notification
 from app.modules.tickets.helpers.helpers import (
-  validate_project_membership, 
-  validate_parent_ticket, 
-  validate_ticket, 
-  validate_project_role, 
-  validate_ticket_assignee, 
-  _generate_ticket_number)
+    validate_project_membership,
+    validate_parent_ticket,
+    validate_ticket,
+    validate_project_role,
+    validate_ticket_assignee,
+    _generate_ticket_number,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.user import User
 from app.modules.organizations.rbac.roles import ProjectRole
@@ -23,8 +24,9 @@ from app.modules.tickets.v1.schemas import (
     TicketSchema,
     TicketResponse,
     UpdateTicketRequest,
-    APIResponse
+    APIResponse,
 )
+
 
 @staticmethod
 async def create_project_ticket(
@@ -40,7 +42,7 @@ async def create_project_ticket(
     )
 
     validate_project_role(
-        role = role,
+        role=role,
         allowed_roles=[
             ProjectRole.PROJECT_OWNER,
             ProjectRole.PROJECT_ADMIN,
@@ -124,10 +126,7 @@ async def list_project_tickets(
         success=True,
         status_code=status.HTTP_200_OK,
         message="Tickets retrieved successfully.",
-        data=[
-            TicketSchema.model_validate(ticket)
-            for ticket in tickets
-        ],
+        data=[TicketSchema.model_validate(ticket) for ticket in tickets],
     )
 
 
@@ -159,8 +158,6 @@ async def get_project_ticket(
         message="Ticket retrieved successfully.",
         data=TicketSchema.model_validate(ticket),
     )
-
-
 
 
 async def update_project_ticket(
@@ -241,12 +238,13 @@ async def update_project_ticket(
         data=TicketSchema.model_validate(ticket),
     )
 
+
 async def delete_project_ticket(
     db: AsyncSession,
     ticket_id: UUID,
     current_user: User,
 ) -> APIResponse[None]:
-    
+
     ticket = await validate_ticket(
         db=db,
         ticket_id=ticket_id,
@@ -257,7 +255,7 @@ async def delete_project_ticket(
         user_id=current_user.id,
     )
     validate_project_role(
-        role = role,
+        role=role,
         allowed_roles=[
             ProjectRole.PROJECT_OWNER,
             ProjectRole.PROJECT_ADMIN,

@@ -2,7 +2,7 @@ from uuid import UUID
 from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.project import Project 
+from app.models.project import Project
 from app.models.user_project import UserProject
 from fastapi import HTTPException, status
 from app.modules.organizations.rbac.roles import ProjectRole
@@ -15,14 +15,13 @@ from app.models.permission import Permission
 
 from sqlalchemy import desc, select
 
+
 async def validate_project_membership(
     db: AsyncSession,
     project_id: UUID,
     user_id: UUID,
 ) -> tuple[Project, UserProject]:
-    project = await db.scalar(
-        select(Project).where(Project.id == project_id)
-    )
+    project = await db.scalar(select(Project).where(Project.id == project_id))
 
     if project is None:
         raise HTTPException(
@@ -43,11 +42,8 @@ async def validate_project_membership(
             detail="You are not a member of this project.",
         )
 
-
     # Query 1
-    role = await db.scalar(
-        select(Role).where(Role.id == membership.role_id)
-    )
+    role = await db.scalar(select(Role).where(Role.id == membership.role_id))
 
     if role is None:
         raise HTTPException(
@@ -55,19 +51,14 @@ async def validate_project_membership(
             detail="Project role configuration is invalid.",
         )
 
-
     # Query 2
     permission_ids = await db.scalars(
-        select(RolePermission.permission_id).where(
-            RolePermission.role_id == role.id
-        )
+        select(RolePermission.permission_id).where(RolePermission.role_id == role.id)
     )
 
     # Query 3
     permissions = await db.scalars(
-        select(Permission.name).where(
-            Permission.id.in_(permission_ids.all())
-        )
+        select(Permission.name).where(Permission.id.in_(permission_ids.all()))
     )
 
     return project, membership, role, set(permissions.all())
@@ -78,13 +69,13 @@ def validate_project_role(
     allowed_roles: list[ProjectRole],
 ) -> None:
     print("ROLE: ", role.name)
-    print("ALLOWED ROLES: ",allowed_roles)
+    print("ALLOWED ROLES: ", allowed_roles)
     if role.name not in allowed_roles:
         raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="You do not have permission to perform this action.",
-                )
-  
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to perform this action.",
+        )
+
 
 async def validate_ticket(
     db: AsyncSession,
@@ -100,9 +91,7 @@ async def validate_ticket(
         HTTPException(404): If the ticket does not exist.
     """
 
-    ticket = await db.scalar(
-        select(Ticket).where(Ticket.id == ticket_id)
-    )
+    ticket = await db.scalar(select(Ticket).where(Ticket.id == ticket_id))
 
     if ticket is None:
         raise HTTPException(
@@ -131,9 +120,7 @@ async def validate_ticket_assignee(
         HTTPException(400): If the user is not a member of the project.
     """
 
-    user = await db.scalar(
-        select(User).where(User.id == user_id)
-    )
+    user = await db.scalar(select(User).where(User.id == user_id))
 
     if user is None:
         raise HTTPException(
@@ -177,9 +164,7 @@ async def validate_parent_ticket(
         HTTPException(400): Invalid parent ticket.
     """
 
-    parent_ticket = await db.scalar(
-        select(Ticket).where(Ticket.id == parent_ticket_id)
-    )
+    parent_ticket = await db.scalar(select(Ticket).where(Ticket.id == parent_ticket_id))
 
     if parent_ticket is None:
         raise HTTPException(
@@ -193,21 +178,13 @@ async def validate_parent_ticket(
             detail="Parent ticket belongs to another project.",
         )
 
-    if (
-        current_ticket_id is not None
-        and parent_ticket.id == current_ticket_id
-    ):
+    if current_ticket_id is not None and parent_ticket.id == current_ticket_id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="A ticket cannot be its own parent.",
         )
 
     return parent_ticket
-
-
-
-
-
 
 
 async def _generate_ticket_number(
@@ -234,9 +211,7 @@ async def _generate_ticket_number(
         next_number = 1
     else:
         try:
-            next_number = int(
-                latest_ticket.ticket_number.split("-")[-1]
-            ) + 1
+            next_number = int(latest_ticket.ticket_number.split("-")[-1]) + 1
         except (ValueError, IndexError):
             next_number = 1
 

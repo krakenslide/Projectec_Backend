@@ -16,6 +16,7 @@ from app.scripts.seed.seeders.users import seed_users
 from sqlalchemy import select
 from app.models.role import Role
 
+
 def seed_database(
     db: Session,
     *,
@@ -36,10 +37,7 @@ def seed_database(
     # seed_rbac(db=db, context=context)
     # NOTE : COMMENTING IT OUT BECAUSE ITS A PART OF OUR PROJECT SETUP CODE
 
-    context.roles = {
-      role.name: role
-      for role in db.scalars(select(Role)).all()
-  }
+    context.roles = {role.name: role for role in db.scalars(select(Role)).all()}
 
     # Transactional Data
     seed_users(
@@ -76,7 +74,6 @@ def seed_database(
     )
 
     db.commit()
-
 
 
 if __name__ == "__main__":

@@ -11,7 +11,7 @@ engine = create_async_engine(
 AsyncSessionLocal = async_sessionmaker(bind=engine, expire_on_commit=False)
 
 
-#SYNC ENGINE SETUP
+# SYNC ENGINE SETUP
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -23,9 +23,7 @@ SYNC_DATABASE_URL = DATABASE_URL.replace(
 sync_engine = create_engine(
     SYNC_DATABASE_URL,
     echo=True,
-    connect_args={
-        "options": f"-csearch_path={DB_SCHEMA},public"
-    },
+    connect_args={"options": f"-csearch_path={DB_SCHEMA},public"},
 )
 
 SessionLocal = sessionmaker(

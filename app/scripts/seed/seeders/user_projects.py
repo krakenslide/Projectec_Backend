@@ -22,10 +22,6 @@ def seed_user_projects(
     db: Session,
     context: SeedContext,
 ) -> None:
-    """
-    Create project memberships.
-    """
-
     memberships: list[UserProject] = []
 
     context.project_members = defaultdict(list)
@@ -36,23 +32,14 @@ def seed_user_projects(
 
     for project in context.projects:
 
-        organization_users = context.organization_members[
-            project.organization_id
-        ]
+        organization_users = context.organization_members[project.organization_id]
 
         owner = context.user_map[project.created_by]
 
         context.project_owner[project.id] = owner
 
-        available_users = [
-            user
-            for user in organization_users
-            if user.id != owner.id
-        ]
+        available_users = [user for user in organization_users if user.id != owner.id]
 
-        #
-        # Select project participants.
-        #
         project_size = random.randint(
             max(2, len(organization_users) // 2),
             len(organization_users),
@@ -65,38 +52,25 @@ def seed_user_projects(
 
         project_users = [owner] + selected_users
 
-        #
-        # Administrators
-        #
         admin_count = min(2, len(selected_users))
         admins = random.sample(selected_users, admin_count)
 
-        #
-        # Remaining Roles
-        #
         remaining_users = [
-            user
-            for user in project_users
-            if user not in admins and user != owner
+            user for user in project_users if user not in admins and user != owner
         ]
 
         assigned_roles = {}
 
-        #
-        # Guarantee one engineer
-        #
         if remaining_users:
             engineer = random.choice(remaining_users)
             assigned_roles[engineer.id] = context.roles[ProjectRole.ENGINEER.value]
 
         for user in remaining_users:
-          if user.id in assigned_roles:
-              continue
-          role = random.choice(PROJECT_MEMBER_ROLES)
-          assigned_roles[user.id] = context.roles[role]
-        #
-        # Create memberships
-        #
+            if user.id in assigned_roles:
+                continue
+            role = random.choice(PROJECT_MEMBER_ROLES)
+            assigned_roles[user.id] = context.roles[role]
+
         for user in project_users:
 
             if user.id == owner.id:

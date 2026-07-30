@@ -15,6 +15,7 @@ class RoleType(StrEnum):
     ORGANIZATION = "organization"
     PROJECT = "project"
 
+
 class Role(Base, AuditMixin):
     __tablename__ = "role"
     __table_args__ = {"schema": DB_SCHEMA}

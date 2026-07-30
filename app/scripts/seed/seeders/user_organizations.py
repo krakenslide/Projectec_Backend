@@ -18,14 +18,6 @@ def seed_user_organizations(
     db: Session,
     context: SeedContext,
 ) -> None:
-    """
-    Create organization memberships.
-
-    Rules:
-        - Creator becomes Owner.
-        - Up to 2 Administrators.
-        - Remaining users become Members.
-    """
 
     memberships: list[UserOrganization] = []
 
@@ -42,21 +34,14 @@ def seed_user_organizations(
 
         context.organization_owner[organization.id] = owner
 
-        available_users = [
-            user
-            for user in context.users
-            if user.id != owner.id
-        ]
+        available_users = [user for user in context.users if user.id != owner.id]
 
         member_count = random.randint(
             MIN_USERS_PER_ORGANIZATION,
-            min(MAX_USERS_PER_ORGANIZATION, len(context.users))
+            min(MAX_USERS_PER_ORGANIZATION, len(context.users)),
         )
 
-        selected_users = random.sample(
-            available_users,
-            k=max(0, member_count - 1)
-        )
+        selected_users = random.sample(available_users, k=max(0, member_count - 1))
 
         organization_users = [owner] + selected_users
 

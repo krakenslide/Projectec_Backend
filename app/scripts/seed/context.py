@@ -39,7 +39,9 @@ class SeedContext:
     organization_owner: dict[UUID, User] = field(default_factory=dict)
 
     # organization_id -> members
-    organization_members: dict[UUID, list[UserOrganization]] = field(default_factory=dict)
+    organization_members: dict[UUID, list[UserOrganization]] = field(
+        default_factory=dict
+    )
 
     # Projects
     projects: list[Project] = field(default_factory=list)

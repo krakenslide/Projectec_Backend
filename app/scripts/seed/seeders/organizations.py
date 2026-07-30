@@ -11,14 +11,6 @@ def seed_organizations(
     context: SeedContext,
     organization_count: int,
 ) -> None:
-    """
-    Seed organizations.
-
-    Each organization is assigned a random creator.
-    The creator will later become the organization owner in the
-    user_organizations seeder.
-    """
-
     organizations: list[Organization] = []
 
     for _ in range(organization_count):

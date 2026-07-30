@@ -37,10 +37,6 @@ def seed_projects(
     db: Session,
     context: SeedContext,
 ) -> None:
-    """
-    Seed projects for every organization.
-    """
-
     projects: list[Project] = []
 
     for organization in context.organizations:

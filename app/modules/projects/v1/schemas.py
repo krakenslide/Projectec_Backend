@@ -12,10 +12,7 @@ from app.modules.organizations.rbac.roles import ProjectRole
 
 class AddProjectMemberRequest(BaseModel):
     email: EmailStr
-    role: ProjectRole = Field(
-        default=ProjectRole.VIEWER,
-        description="Project role"
-    )
+    role: ProjectRole = Field(default=ProjectRole.VIEWER, description="Project role")
 
 
 class UpdateProjectMemberRoleRequest(BaseModel):
@@ -54,7 +51,7 @@ class CreateProjectRequest(BaseModel):
         description="Project description",
         examples=["Internal IT Ticketing System"],
     )
-    
+
     code: str = Field(
         min_length=3,
         max_length=10,

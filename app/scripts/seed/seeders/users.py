@@ -17,7 +17,7 @@ def seed_users(
             name=context.faker.name(),
             email=context.faker.unique.email(),
             password_hash=DEFAULT_PASSWORD_HASH,
-            phone_number = context.faker.numerify("##########"),
+            phone_number=context.faker.numerify("##########"),
             nationality="India",
             verification_token=None,
             is_verified=True,
