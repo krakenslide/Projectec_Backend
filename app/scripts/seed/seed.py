@@ -12,6 +12,7 @@ from app.scripts.seed.seeders.tickets import seed_tickets
 from app.scripts.seed.seeders.user_organizations import seed_user_organizations
 from app.scripts.seed.seeders.user_projects import seed_user_projects
 from app.scripts.seed.seeders.users import seed_users
+from app.scripts.seed.seeders.comments import seed_comments
 
 from sqlalchemy import select
 from app.models.role import Role
@@ -71,6 +72,11 @@ def seed_database(
         db=db,
         context=context,
         ticket_count=ticket_count,
+    )
+
+    seed_comments(
+        db=db,
+        context = context,
     )
 
     db.commit()

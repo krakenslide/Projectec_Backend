@@ -9,6 +9,7 @@ from app.models.organization import Organization
 from app.models.project import Project
 from app.models.role import Role
 from app.models.ticket import Ticket
+from app.models.comment import Comment
 from app.models.user import User
 from app.models.user_organization import UserOrganization
 from app.models.user_project import UserProject
@@ -16,13 +17,6 @@ from app.models.user_project import UserProject
 
 @dataclass(slots=True)
 class SeedContext:
-    """
-    Shared runtime state between all seeders.
-
-    Each seeder populates this context after inserting records so that
-    subsequent seeders don't need to repeatedly query the database.
-    """
-
     faker: Faker = field(default_factory=Faker)
 
     # Users
@@ -59,3 +53,5 @@ class SeedContext:
     tickets: list[Ticket] = field(default_factory=list)
 
     roles: dict[str, Role] = field(default_factory=dict)
+
+    comments: list[Comment] = field(default_factory=list)
