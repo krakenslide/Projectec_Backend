@@ -59,11 +59,9 @@ async def login(request: LoginRequest, db: AsyncSession = Depends(get_db)):
             status_code=401, detail="Invalid credentials"
         )  # 401 not 400
     if user.is_verified == False:
-        return AuthResponse(
-            status_code=401,
-            access_token=None,
-            token_type="None",
-            message="Email Has Not Been Verified",
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Email Has Not Been Verified",
         )
 
     token = create_access_token(data={"sub": str(user.id)})
@@ -82,6 +80,7 @@ async def logout(current_user: User = Depends(get_current_user)):
 async def read_current_user(current_user=Depends(get_current_user)):
     return {
         "email": current_user.email,
+        "name": current_user.name,
         "id": current_user.id,
         "is_active": current_user.is_active,
     }

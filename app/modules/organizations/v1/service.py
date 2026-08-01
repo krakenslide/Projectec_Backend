@@ -92,7 +92,13 @@ async def create_organization(
             success=True,
             status_code=201,
             message="Organization created successfully.",
-            data=None,
+            data={
+                "id": str(organization.id),
+                "name": organization.name,
+                "description": organization.description,
+                "created_at": organization.created_at,
+                "updated_at": organization.updated_at,
+            },
         )
 
     except IntegrityError:
@@ -144,6 +150,7 @@ async def get_organizations_for_user(
         {
             "id": str(org.id),
             "name": org.name,
+            "description": org.description,
             "created_at": org.created_at,
             "updated_at": org.updated_at,
         }
@@ -193,7 +200,10 @@ async def require_organization_admin_or_owner(
 ):
     membership, role = await get_organization_membership(db, organization_id, user_id)
 
-    if role not in ["OWNER", "ADMIN"]:
+    if role.name not in (
+        OrganizationRole.OWNER.value,
+        OrganizationRole.ADMINISTRATOR.value,
+    ):
         raise HTTPException(status_code=403, detail="Not allowed")
 
     return True
@@ -233,8 +243,11 @@ async def add_organization_member(
             )
 
         role = await db.scalar(
-            select(Role).where(Role.name == ROLE_NAME_MAP[data.role])
+            select(Role).where(Role.name == data.role.value)
         )
+
+        if role is None:
+            raise HTTPException(status_code=500, detail="Organization role not found")
 
         member = UserOrganization(
             organization_id=organization_id,
@@ -245,7 +258,14 @@ async def add_organization_member(
         db.add(member)
         await db.commit()
         await db.refresh(member)
-        return member
+        return OrganizationMemberResponse(
+            id=member.id,
+            organization_id=member.organization_id,
+            user_id=member.user_id,
+            role=OrganizationRole(role.name),
+            created_at=member.created_at,
+            updated_at=member.updated_at,
+        )
     else:
         raise HTTPException(
             status_code=401,
@@ -262,6 +282,7 @@ async def list_organization_members(
     result = await db.execute(
         select(
             User,
+            UserOrganization,
             Role,
         )
         .join(
@@ -277,16 +298,19 @@ async def list_organization_members(
 
     members = []
 
-    for user, role in result.all():
+    for user, membership, role in result.all():
 
         members.append(
             OrganizationMemberUserResponse(
-                id=user.id,
-                email=user.email,
-                first_name=user.first_name,
-                last_name=user.last_name,
+                id=membership.id,
+                organization_id=membership.organization_id,
+                user_id=user.id,
                 role_id=role.id,
-                role_name=role.name,
+                role_name=OrganizationRole(role.name),
+                email=user.email,
+                name=user.name,
+                created_at=membership.created_at,
+                updated_at=membership.updated_at,
             )
         )
 

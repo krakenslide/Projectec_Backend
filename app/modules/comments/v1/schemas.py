@@ -32,6 +32,8 @@ class CommentResponse(BaseModel):
     updated_at: datetime | None
 
     created_by: UUID | None
+    name: str | None
+    email: str | None
     updated_by: UUID | None
 
 

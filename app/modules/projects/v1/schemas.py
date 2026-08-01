@@ -24,6 +24,7 @@ class ProjectMemberSchema(BaseModel):
     project_id: UUID
     user_id: UUID
     email: EmailStr
+    name: str | None
     role: ProjectRole
     created_at: datetime
     updated_at: datetime

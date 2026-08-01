@@ -11,7 +11,7 @@ from app.modules.users.v1.service import list_users
 from app.models import User
 
 router = APIRouter(
-    prefix="/users",
+    prefix="/v1/users",
     tags=["Users"],
 )
 

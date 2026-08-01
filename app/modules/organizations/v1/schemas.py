@@ -57,7 +57,7 @@ class OrganizationResponse(BaseModel):
     success: bool
     status_code: int
     message: str
-    data: list[dict[Any, Any]] | None = None
+    data: dict[Any, Any] | list[dict[Any, Any]] | None = None
 
 
 class OrganizationMemberResponse(BaseModel):
@@ -81,8 +81,10 @@ class OrganizationMemberUserResponse(BaseModel):
     id: UUID
     organization_id: UUID
     user_id: UUID
-    role: OrganizationRole
+    role_id: UUID
+    role_name: OrganizationRole
     email: str
+    name: str | None
     created_at: datetime
     updated_at: datetime
 

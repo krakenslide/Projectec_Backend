@@ -142,6 +142,7 @@ async def add_project_member(
             project_id=member.project_id,
             user_id=member.user_id,
             email=user.email,
+                name=user.name,
             role=data.role,
             created_at=member.created_at,
             updated_at=member.updated_at,
@@ -212,6 +213,7 @@ async def list_project_members(
                 project_id=membership.project_id,
                 user_id=membership.user_id,
                 email=user.email,
+                name=user.name,
                 role=ProjectRole(role.name),
                 created_at=membership.created_at,
                 updated_at=membership.updated_at,
@@ -502,6 +504,7 @@ async def create_project(
     project = Project(
         organization_id=organization_id,
         name=data.name,
+        code=data.code,
         description=data.description,
     )
 

@@ -37,8 +37,7 @@ async def list_users(
 
         stmt = stmt.where(
             or_(
-                User.first_name.ilike(search),
-                User.last_name.ilike(search),
+                User.name.ilike(search),
                 User.email.ilike(search),
             )
         )

@@ -23,7 +23,7 @@ from .service import (
 )
 
 router = APIRouter(
-    prefix="/tickets/{ticket_id}/comments",
+    prefix="/v1/tickets/{ticket_id}/comments",
     tags=["Comments"],
 )
 

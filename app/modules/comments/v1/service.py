@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.schemas import APIResponse
 from app.models.comment import Comment
 from app.models.ticket import Ticket
+from app.models.user import User
 
 from .schemas import (
     CommentCreateRequest,
@@ -52,6 +53,21 @@ async def _validate_comment(
     return comment
 
 
+def _comment_response(comment: Comment, user: User | None) -> CommentResponse:
+    return CommentResponse(
+        id=comment.id,
+        ticket_id=comment.ticket_id,
+        description=comment.description,
+        has_attachment=comment.has_attachment,
+        created_at=comment.created_at,
+        updated_at=comment.updated_at,
+        created_by=comment.created_by,
+        name=user.name if user else None,
+        email=user.email if user else None,
+        updated_by=comment.updated_by,
+    )
+
+
 async def create_comment(
     db: AsyncSession,
     ticket_id: UUID,
@@ -76,11 +92,13 @@ async def create_comment(
     await db.commit()
     await db.refresh(comment)
 
+    user = await db.scalar(select(User).where(User.id == comment.created_by))
+
     return APIResponse(
         success=True,
         message="Comment created successfully.",
         status_code= 200,
-        data=CommentResponse.model_validate(comment),
+        data=_comment_response(comment, user),
     )
 
 
@@ -97,11 +115,13 @@ async def get_comment(
         comment_id=comment_id,
     )
 
+    user = await db.scalar(select(User).where(User.id == comment.created_by))
+
     return APIResponse(
         success=True,
         message = "Comments fetched successfully.",
         status_code= 200,
-        data=CommentResponse.model_validate(comment),
+        data=_comment_response(comment, user),
     )
 
 
@@ -117,8 +137,9 @@ async def list_comments(
     )
 
     comments = (
-        await db.scalars(
-            select(Comment)
+        await db.execute(
+            select(Comment, User)
+            .outerjoin(User, User.id == Comment.created_by)
             .where(
                 Comment.ticket_id == ticket_id,
                 Comment.is_deleted.is_(False),
@@ -132,10 +153,7 @@ async def list_comments(
         status_code= 200,
         message = "Comment fetched successfully.",
         data=CommentListResponse(
-            comments=[
-                CommentResponse.model_validate(comment)
-                for comment in comments
-            ]
+            comments=[_comment_response(comment, user) for comment, user in comments]
         ),
     )
 
@@ -160,11 +178,13 @@ async def update_comment(
     await db.commit()
     await db.refresh(comment)
 
+    user = await db.scalar(select(User).where(User.id == comment.created_by))
+
     return APIResponse(
         success=True,
         message="Comment updated successfully.",
         status_code= 200,
-        data=CommentResponse.model_validate(comment),
+        data=_comment_response(comment, user),
     )
 
 
