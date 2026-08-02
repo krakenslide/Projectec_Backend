@@ -18,6 +18,7 @@ from app.modules.organizations.v1.router import router as organizations_router
 from app.modules.auth.v1.router import router as auth_router
 from app.modules.comments.v1.router import router as comment_router
 from starlette.middleware.sessions import SessionMiddleware
+from app.modules.websockets.router import router as websocket_router
 
 import os
 from dotenv import load_dotenv
@@ -51,6 +52,7 @@ app.include_router(organizations_router)
 app.include_router(projects_router)
 app.include_router(ticket_router)
 app.include_router(comment_router)
+app.include_router(websocket_router)
 
 
 @app.get("/")

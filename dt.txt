@@ -320,3 +320,8 @@ JOIN app.role r
     ON r.id = up.role_id
 WHERE r.name = 'Project Admin'
 ORDER BY o.name, p.name, u.name;
+
+
+
+WEBSOCKET ENDPOINT FOR TESTING
+ws://127.0.0.1:8000/ws/notifications?token=<token>

@@ -17,6 +17,7 @@ from app.modules.tickets.helpers.helpers import (
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.user import User
 from app.modules.organizations.rbac.roles import ProjectRole
+from app.modules.notification.v1.service import notify_ticket_assignment
 from app.models.ticket import Ticket
 from app.modules.tickets.enum import TicketStatus
 from app.modules.tickets.v1.schemas import (
@@ -92,7 +93,18 @@ async def create_project_ticket(
         hours_logged=request.hours_logged or 0,
         demo_link=request.demo_link,
     )
+
     db.add(ticket)
+    await db.flush()
+
+    if ticket.assigned_to:
+        await notify_ticket_assignment(
+            db=db,
+            ticket=ticket,
+            assignee_id=ticket.assigned_to,
+            actor=current_user,
+        )
+
     await db.commit()
     await db.refresh(ticket)
     return TicketResponse(
@@ -167,15 +179,13 @@ async def update_project_ticket(
     request: UpdateTicketRequest,
     current_user: User,
 ) -> TicketResponse:
-    """
-    Update an existing ticket.
-    """
 
     # Validate ticket
     ticket = await validate_ticket(
         db=db,
         ticket_id=ticket_id,
     )
+    old_assignee = ticket.assigned_to
 
     # Validate project membership
     project, membership, role, permissions = await validate_project_membership(
@@ -196,7 +206,6 @@ async def update_project_ticket(
         ],
     )
 
-    # Only include fields explicitly sent by the client
     update_data = request.model_dump(exclude_unset=True)
 
     # Validate assignee if changed
@@ -208,13 +217,13 @@ async def update_project_ticket(
         )
 
     # Validate parent ticket if changed
-    if "parent_ticket_id" in update_data:
-        await validate_parent_ticket(
-            db=db,
-            parent_ticket_id=update_data["parent_ticket_id"],
-            project_id=project.id,
-            current_ticket_id=ticket.id,
-        )
+    # if "parent_ticket_id" in update_data:
+    #     await validate_parent_ticket(
+    #         db=db,
+    #         parent_ticket_id=update_data["parent_ticket_id"],
+    #         project_id=project.id,
+    #         current_ticket_id=ticket.id,
+    #     )
 
     # Update enum fields
     enum_fields = {
@@ -224,6 +233,30 @@ async def update_project_ticket(
     }
 
     update_data = request.model_dump(exclude_unset=True)
+
+    # If assignee changed, replace UUID with username for activity logging
+    if "assigned_to" in update_data:
+
+        old_user = None
+        new_user = None
+
+        if ticket.assigned_to:
+            old_user = await db.scalar(
+                select(User).where(User.id == ticket.assigned_to)
+            )
+
+        if update_data["assigned_to"]:
+            new_user = await db.scalar(
+                select(User).where(User.id == update_data["assigned_to"])
+            )
+
+        update_data["old_assigned_to"] = (
+            old_user.name if old_user else None
+        )
+
+        update_data["new_assigned_to"] = (
+            new_user.name if new_user else None
+        )
 
     await create_activity_records(
         db=db,
@@ -237,6 +270,25 @@ async def update_project_ticket(
             value = value.value
 
         setattr(ticket, field, value)
+
+    print("askjlbfgrhilaewrbgiubaweoiugbrvrioaeubgvuio;erabgvoibaweroi;gbverioa;jbngv")
+    await db.flush()
+    print("diuojsdtnbiufgbvneisrutgiubvrnstibg;erabgvoibaweroi;gbverioa;jbngv")
+
+    new_assignee = ticket.assigned_to
+
+    if (
+        old_assignee != new_assignee
+        and new_assignee is not None
+    ):
+        await notify_ticket_assignment(
+            db=db,
+            ticket=ticket,
+            assignee_id=new_assignee,
+            actor=current_user,
+        )
+
+    print("ilaewrbgiubaweoiuaweroi;gbverioa;jbngv")
 
     await db.commit()
     await db.refresh(ticket)
