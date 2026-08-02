@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.models.ticket import Ticket
 from app.models.project import Project
+from app.modules.helpers.create_activity_record import create_activity_records
 from app.modules.mailer.notifications import send_email_notification
 from app.modules.tickets.helpers.helpers import (
     validate_project_membership,
@@ -221,6 +222,15 @@ async def update_project_ticket(
         "status",
         "type",
     }
+
+    update_data = request.model_dump(exclude_unset=True)
+
+    await create_activity_records(
+        db=db,
+        ticket=ticket,
+        update_data=update_data,
+        current_user=current_user,
+    )
 
     for field, value in update_data.items():
         if field in enum_fields and value is not None:

@@ -298,3 +298,25 @@ ORDER BY
         ELSE 2
     END,
     u.name;
+
+
+SELECT
+    o.id   AS organization_id,
+    o.name AS organization_name,
+    p.id   AS project_id,
+    p.name AS project_name,
+    u.id   AS user_id,
+    u.name AS user_name,
+    u.email,
+    r.name AS role
+FROM app.project p
+JOIN app.organization o
+    ON o.id = p.organization_id
+JOIN app.user_project up
+    ON up.project_id = p.id
+JOIN app."user" u
+    ON u.id = up.user_id
+JOIN app.role r
+    ON r.id = up.role_id
+WHERE r.name = 'Project Admin'
+ORDER BY o.name, p.name, u.name;
