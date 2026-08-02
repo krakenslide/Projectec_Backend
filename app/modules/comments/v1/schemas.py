@@ -10,6 +10,7 @@ class CommentCreateRequest(BaseModel):
         min_length=1,
         max_length=5000,
     )
+    tagged_users: list[UUID] = Field(default_factory=list)
 
 
 class CommentUpdateRequest(BaseModel):

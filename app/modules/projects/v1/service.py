@@ -576,11 +576,29 @@ async def get_projects_for_organization(
             detail="You are not a member of this organization.",
         )
 
+    #Validate user belongs to project
+    user_project_ids = (
+        await db.scalars(
+            select(UserProject.project_id).where(
+                UserProject.user_id == current_user_id
+            )
+        )
+    ).all()
+    
+    if user_project_ids is None:
+        raise HTTPException(
+            status_code=HTTPStatus.FORBIDDEN,
+            detail="You are not a member of this project.",
+        )
+
     # Fetch projects
 
     result = await db.scalars(
         select(Project)
-        .where(Project.organization_id == organization_id)
+        .where(
+            Project.organization_id == organization_id,
+            Project.id.in_(user_project_ids),
+        )
         .order_by(Project.created_at.desc())
     )
 
@@ -599,7 +617,6 @@ async def get_project(
     project_id,
     current_user_id,
 ) -> APIResponse[ProjectSchema]:
-    # Fetch project
 
     project = await db.scalar(select(Project).where(Project.id == project_id))
 

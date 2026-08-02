@@ -9,6 +9,9 @@ from app.models.comment import Comment
 from app.models.ticket import Ticket
 from app.models.user import User
 
+from app.modules.notification.v1.service import create_notifications
+from app.modules.notification.v1.schemas import NotificationCreate
+from app.modules.notification.v1.enum import NotificationType
 from .schemas import (
     CommentCreateRequest,
     CommentListResponse,
@@ -68,6 +71,40 @@ def _comment_response(comment: Comment, user: User | None) -> CommentResponse:
     )
 
 
+# async def create_comment(
+#     db: AsyncSession,
+#     ticket_id: UUID,
+#     data: CommentCreateRequest,
+#     current_user_id: UUID,
+# ) -> APIResponse[CommentResponse]:
+
+#     await _validate_ticket(
+#         db=db,
+#         ticket_id=ticket_id,
+#     )
+
+#     comment = Comment(
+#         ticket_id=ticket_id,
+#         description=data.description,
+#         has_attachment=False,
+#         created_by=current_user_id,
+#     )
+
+#     db.add(comment)
+
+#     await db.commit()
+#     await db.refresh(comment)
+
+#     user = await db.scalar(select(User).where(User.id == comment.created_by))
+
+#     return APIResponse(
+#         success=True,
+#         message="Comment created successfully.",
+#         status_code= 200,
+#         data=_comment_response(comment, user),
+#     )
+
+
 async def create_comment(
     db: AsyncSession,
     ticket_id: UUID,
@@ -75,7 +112,7 @@ async def create_comment(
     current_user_id: UUID,
 ) -> APIResponse[CommentResponse]:
 
-    await _validate_ticket(
+    ticket = await _validate_ticket(
         db=db,
         ticket_id=ticket_id,
     )
@@ -88,16 +125,52 @@ async def create_comment(
     )
 
     db.add(comment)
+    
+    # Generates comment.id
+    await db.flush()
+
+    notification_requests = []
+
+    for tagged_user_id in set(data.tagged_users):
+        if tagged_user_id == current_user_id:
+            continue
+
+        notification_requests.append(
+            NotificationCreate(
+                organization_id=ticket.organization_id,
+                project_id=ticket.project_id,
+                ticket_id=ticket.id,
+                recipient_user_id=tagged_user_id,
+                actor_user_id=current_user_id,
+                notification_type=NotificationType.MENTION,
+                title="You were mentioned",
+                message="You were mentioned in a comment.",
+                payload={
+                    "comment_id": str(comment.id),
+                },
+                created_by=current_user_id,
+            )
+        )
+
+    if notification_requests:
+        await create_notifications(
+            db=db,
+            notifications=notification_requests,
+        )
 
     await db.commit()
+
     await db.refresh(comment)
 
-    user = await db.scalar(select(User).where(User.id == comment.created_by))
+    user = await db.scalar(
+        select(User)
+        .where(User.id == comment.created_by)
+    )
 
     return APIResponse(
         success=True,
         message="Comment created successfully.",
-        status_code= 200,
+        status_code=200,
         data=_comment_response(comment, user),
     )
 

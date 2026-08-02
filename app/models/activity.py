@@ -56,13 +56,3 @@ class Activity(Base, AuditMixin):
         Text,
         nullable=True,
     )
-
-    # ticket = relationship(
-    #     "Ticket",
-    #     back_populates="activities",
-    # )
-
-    # user = relationship(
-    #     "User",
-    #     foreign_keys=[user_id],
-    # )
