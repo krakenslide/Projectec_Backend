@@ -1,9 +1,13 @@
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.modules.projects.models import Project
-from app.modules.issues.models import Issue
-from app.modules.organizations.models import OrganizationMember
+# from app.modules.projects.models import Project
+# from app.modules.issues.models import Issue
+# from app.modules.organizations.models import OrganizationMember
+# NOTE : HOW THE HELL DASHBOARD MODULE WAS WORKING WITH INCORRECT IMPORTS????????? lol
+from app.models.project import Project
+from app.models.ticket import Ticket as Issue
+from app.models.user_organization import UserOrganization as OrganizationMember
 
 async def get_dashboard_summary(db: AsyncSession, user_id):
     accessible_projects_subquery = (

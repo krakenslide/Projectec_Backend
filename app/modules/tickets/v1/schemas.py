@@ -73,6 +73,8 @@ class UpdateTicketRequest(BaseModel):
 
     status: Optional[TicketStatus] = None
 
+    milestone: Optional[str]
+
     difficulty: Optional[int] = Field(
         default=None,
         ge=1,
@@ -116,6 +118,8 @@ class TicketSchema(BaseModel):
     assigned_to: Optional[UUID]
 
     ticket_number: str
+
+    milestone: Optional[str]
 
     title: str
     description: Optional[str]

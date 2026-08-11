@@ -54,6 +54,13 @@ class Ticket(Base, AuditMixin):
         index=True,
     )
 
+    milestone_id = Column(
+            UUID(as_uuid=True),
+            ForeignKey(f"{DB_SCHEMA}.milestone.id"),
+            nullable=True,
+            index=True,
+    )
+
     title = Column(
         String(255),
         nullable=False,

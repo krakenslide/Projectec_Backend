@@ -28,6 +28,7 @@ from app.modules.tickets.v1.schemas import (
     UpdateTicketRequest,
     APIResponse,
 )
+from app.models.milestone import Milestone
 
 
 @staticmethod
@@ -271,9 +272,7 @@ async def update_project_ticket(
 
         setattr(ticket, field, value)
 
-    print("askjlbfgrhilaewrbgiubaweoiugbrvrioaeubgvuio;erabgvoibaweroi;gbverioa;jbngv")
     await db.flush()
-    print("diuojsdtnbiufgbvneisrutgiubvrnstibg;erabgvoibaweroi;gbverioa;jbngv")
 
     new_assignee = ticket.assigned_to
 
@@ -287,8 +286,6 @@ async def update_project_ticket(
             assignee_id=new_assignee,
             actor=current_user,
         )
-
-    print("ilaewrbgiubaweoiuaweroi;gbverioa;jbngv")
 
     await db.commit()
     await db.refresh(ticket)
@@ -331,4 +328,51 @@ async def delete_project_ticket(
         success=True,
         status_code=status.HTTP_200_OK,
         message="Ticket deleted successfully.",
+    )
+
+
+
+async def list_milestone_tickets(
+    db: AsyncSession,
+    project_id: UUID,
+    milestone_name: str,
+    current_user: User,
+) -> TicketListResponse:
+
+    await validate_project_membership(
+        db=db,
+        project_id=project_id,
+        user_id=current_user.id,
+    )
+
+    milestone = await db.scalar(
+        select(Milestone)
+        .where(
+            Milestone.project_id == project_id,
+            Milestone.name == milestone_name,
+        )
+    )
+
+    if milestone is None:
+        raise ValueError("Milestone not found.")
+
+    result = await db.scalars(
+        select(Ticket)
+        .where(
+            Ticket.project_id == project_id,
+            Ticket.milestone_id == milestone.id,
+        )
+        .order_by(Ticket.created_at.desc())
+    )
+
+    tickets = result.all()
+
+    return TicketListResponse(
+        success=True,
+        status_code=status.HTTP_200_OK,
+        message="Milestone tickets retrieved successfully.",
+        data=[
+            TicketSchema.model_validate(ticket)
+            for ticket in tickets
+        ],
     )

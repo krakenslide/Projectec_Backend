@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import get_db
 from app.modules.auth.deps import get_current_user
-from app.modules.issues.schemas import IssueResponse
+from app.modules.tickets.v1.schemas import TicketResponse as IssueResponse
 
 from .schemas import DashboardSummaryReponse
 from .service import get_dashboard_summary, get_my_assigned_issues, get_recent_issues
