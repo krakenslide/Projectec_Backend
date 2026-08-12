@@ -24,6 +24,8 @@ class CreateTicketRequest(BaseModel):
 
     priority: TicketPriority = TicketPriority.P2
 
+    milestone_id: Optional[UUID] = None
+
     difficulty: int = Field(
         default=70,
         ge=1,
@@ -59,6 +61,7 @@ class CreateTicketRequest(BaseModel):
 
 
 class UpdateTicketRequest(BaseModel):
+    
     title: Optional[str] = Field(
         default=None,
         min_length=3,
@@ -73,7 +76,7 @@ class UpdateTicketRequest(BaseModel):
 
     status: Optional[TicketStatus] = None
 
-    milestone: Optional[str]
+    milestone_id: Optional[UUID] = None
 
     difficulty: Optional[int] = Field(
         default=None,
@@ -119,7 +122,7 @@ class TicketSchema(BaseModel):
 
     ticket_number: str
 
-    milestone: Optional[str]
+    milestone_id: Optional[UUID] = None
 
     title: str
     description: Optional[str]

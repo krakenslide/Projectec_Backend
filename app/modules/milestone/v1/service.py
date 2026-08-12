@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.milestone import Milestone
 from app.models.ticket import Ticket
+from app.models.project import Project
 from app.models.user import User
 from app.modules.tickets.helpers.helpers import validate_project_membership
 
@@ -15,6 +16,8 @@ from .schemas import (
     MilestoneProgressResponse,
     MilestoneSchema,
     ProjectMilestonesResponse,
+    MilestoneResponse,
+    CreateMilestoneRequest
 )
 
 
@@ -185,4 +188,91 @@ async def get_milestone_progress(
         status_code=status.HTTP_200_OK,
         message="Milestone progress retrieved successfully.",
         data=progress_points,
+    )
+
+
+async def create_milestone(
+    db: AsyncSession,
+    project_id: UUID,
+    data: CreateMilestoneRequest,
+    current_user: User,
+) -> MilestoneResponse:
+
+    # ---------------------------------------------------------
+    # Validate project membership
+    # ---------------------------------------------------------
+
+    await validate_project_membership(
+        db=db,
+        project_id=project_id,
+        user_id=current_user.id,
+    )
+
+    # ---------------------------------------------------------
+    # Validate project exists
+    # ---------------------------------------------------------
+
+    project = await db.scalar(
+        select(Project).where(
+            Project.id == project_id,
+        )
+    )
+
+    if project is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Project not found.",
+        )
+
+    # ---------------------------------------------------------
+    # Clean milestone name
+    # ---------------------------------------------------------
+
+    milestone_name = data.name.strip()
+
+    if not milestone_name:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Milestone name cannot be empty.",
+        )
+
+    # ---------------------------------------------------------
+    # Check duplicate milestone within project
+    # ---------------------------------------------------------
+
+    existing_milestone = await db.scalar(
+        select(Milestone).where(
+            Milestone.project_id == project_id,
+            Milestone.name == milestone_name,
+        )
+    )
+
+    if existing_milestone is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A milestone with this name already exists in this project.",
+        )
+
+    # ---------------------------------------------------------
+    # Create milestone
+    # ---------------------------------------------------------
+
+    milestone = Milestone(
+        project_id=project_id,
+        name=milestone_name,
+        created_by=current_user.id,
+        updated_by=current_user.id,
+    )
+
+    db.add(milestone)
+
+    await db.commit()
+
+    await db.refresh(milestone)
+
+    return MilestoneResponse(
+        success=True,
+        status_code=status.HTTP_201_CREATED,
+        message="Milestone created successfully.",
+        data=milestone,
     )

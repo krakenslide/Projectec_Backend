@@ -3,15 +3,21 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
+class DeveloperCommentSummary(BaseModel):
+    id: UUID
+    description: str
+    created_at: datetime
 
 class DeveloperTicketSummary(BaseModel):
     project_name: str
     ticket_name: str
+
     status_changed: bool
     current_status: str
     finished: bool
     hours_logged: int
-    comments: list[str]
+
+    comments: list[DeveloperCommentSummary]
 
 
 class DeveloperDailySummary(BaseModel):

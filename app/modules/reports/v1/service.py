@@ -70,6 +70,25 @@ def get_report_window() -> tuple[datetime, datetime]:
     return start, end
 
 
+# def get_report_window() -> tuple[datetime, datetime]:
+#     now = datetime.now(timezone.utc)
+
+#     today_9am = datetime.combine(
+#         now.date(),
+#         time(9, 0),
+#         tzinfo=timezone.utc,
+#     )
+
+#     if now < today_9am:
+#         end = today_9am
+#         start = end - timedelta(days=1)
+#     else:
+#         start = today_9am - timedelta(days=1)
+#         end = today_9am
+
+#     return start, end
+
+
 async def get_developer_daily_summary(
     db: AsyncSession,
     organization_id: UUID,
@@ -93,14 +112,9 @@ async def get_developer_daily_summary(
             "User is not a member of this organization."
         )
 
-    # ---------------------------------------------------------
-    # Get developer
-    # ---------------------------------------------------------
-
     developer = await db.scalar(
         select(User).where(
             User.id == user_id,
-            User.is_deleted.is_(False),
         )
     )
 
@@ -130,7 +144,6 @@ async def get_developer_daily_summary(
         .where(
             Project.organization_id == organization_id,
             Ticket.assigned_to == user_id,
-            Ticket.is_deleted.is_(False),
         )
     )
 
@@ -187,7 +200,6 @@ async def get_developer_daily_summary(
         # -----------------------------------------------------
 
         for activity in activities:
-
             if activity.field_name == "status":
 
                 status_changed = True
@@ -202,10 +214,13 @@ async def get_developer_daily_summary(
 
                 try:
                     hours_logged += (
-                        int(activity.new_value)
-                        - int(activity.old_value)
+                        float(activity.new_value)
+                        - float(activity.old_value)
                     )
+                    hours_logged = int(hours_logged)
                 except (TypeError, ValueError):
+                    import traceback
+                    traceback.print_exc()
                     pass
 
         # -----------------------------------------------------
@@ -233,9 +248,6 @@ async def get_developer_daily_summary(
             )
         )
 
-    # ---------------------------------------------------------
-    # Overall summary
-    # ---------------------------------------------------------
 
     total_tickets = len(report)
 
@@ -254,10 +266,6 @@ async def get_developer_daily_summary(
         len(ticket.comments)
         for ticket in report
     )
-
-    # ---------------------------------------------------------
-    # Build final response
-    # ---------------------------------------------------------
 
     summary = DeveloperDailySummary(
         user_id=developer.id,
@@ -278,8 +286,6 @@ async def get_developer_daily_summary(
         message="Developer daily summary retrieved successfully.",
         data=summary,
     )
-
-
 
 
 async def generate_organization_daily_report(
@@ -310,7 +316,6 @@ async def generate_organization_daily_report(
         .where(
             Project.organization_id == organization_id,
             Role.name == "Engineer",
-            User.is_deleted.is_(False),
         )
         .distinct()
     )

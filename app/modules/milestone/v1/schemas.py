@@ -1,10 +1,28 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
+
+
+class CreateMilestoneRequest(BaseModel):
+    name: str = Field(
+        ...,
+        min_length=1,
+        max_length=255,
+    )
+
+
+class MilestoneResponse(BaseModel):
+    success: bool
+    status_code: int
+    message: str
+    data: MilestoneSchema
 
 
 class MilestoneSchema(BaseModel):
+    # TODO Why this model_config works?
+    model_config = ConfigDict(from_attributes=True)
+
     id: UUID
     name: str
 
