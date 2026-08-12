@@ -13,7 +13,7 @@ from app.scripts.seed.seeders.user_organizations import seed_user_organizations
 from app.scripts.seed.seeders.user_projects import seed_user_projects
 from app.scripts.seed.seeders.users import seed_users
 from app.scripts.seed.seeders.comments import seed_comments
-
+from app.scripts.seed.seeders.milestones import seed_milestones
 from sqlalchemy import select
 from app.models.role import Role
 
@@ -59,6 +59,11 @@ def seed_database(
     )
 
     seed_projects(
+        db=db,
+        context=context,
+    )
+
+    seed_milestones(
         db=db,
         context=context,
     )

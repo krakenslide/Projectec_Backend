@@ -19,6 +19,7 @@ from app.modules.tickets.v1.service import (
     get_project_ticket,
     update_project_ticket,
     delete_project_ticket,
+    list_milestone_tickets
 )
 
 router = APIRouter(
@@ -106,5 +107,23 @@ async def delete_ticket(
     return await delete_project_ticket(
         db=db,
         ticket_id=ticket_id,
+        current_user=current_user,
+    )
+
+
+@router.get(
+    "/projects/{project_id}/milestones/{milestone_name}/tickets",
+    response_model=TicketListResponse,
+)
+async def list_milestone_tickets_endpoint(
+    project_id: UUID,
+    milestone_name: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return await list_milestone_tickets(
+        db=db,
+        project_id=project_id,
+        milestone_name=milestone_name,
         current_user=current_user,
     )

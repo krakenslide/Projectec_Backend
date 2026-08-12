@@ -13,6 +13,7 @@ from app.models.comment import Comment
 from app.models.user import User
 from app.models.user_organization import UserOrganization
 from app.models.user_project import UserProject
+from app.models.milestone import Milestone
 
 
 @dataclass(slots=True)
@@ -55,3 +56,11 @@ class SeedContext:
     roles: dict[str, Role] = field(default_factory=dict)
 
     comments: list[Comment] = field(default_factory=list)
+
+    # Milestone Module
+    milestones: list[Milestone] = field(default_factory=list)
+
+    # Project_id -> milestones
+    project_milestones: dict[UUID, list[Milestone]] = field(
+        default_factory=dict
+    )
