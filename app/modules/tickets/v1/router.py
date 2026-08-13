@@ -112,7 +112,7 @@ async def delete_ticket(
 
 
 @router.get(
-    "/projects/{project_id}/milestones/{milestone_name}/tickets",
+    "/{project_id}/{milestone_name}/tickets",
     response_model=TicketListResponse,
 )
 async def list_milestone_tickets_endpoint(
