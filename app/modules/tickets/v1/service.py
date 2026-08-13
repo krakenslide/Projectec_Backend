@@ -335,7 +335,7 @@ async def delete_project_ticket(
 async def list_milestone_tickets(
     db: AsyncSession,
     project_id: UUID,
-    milestone_name: str,
+    milestone_id: UUID,
     current_user: User,
 ) -> TicketListResponse:
 
@@ -345,22 +345,22 @@ async def list_milestone_tickets(
         user_id=current_user.id,
     )
 
-    milestone = await db.scalar(
-        select(Milestone)
-        .where(
-            Milestone.project_id == project_id,
-            Milestone.name == milestone_name,
-        )
-    )
+    # milestone = await db.scalar(
+    #     select(Milestone)
+    #     .where(
+    #         Milestone.project_id == project_id,
+    #         Milestone.name == milestone_name,
+    #     )
+    # )
 
-    if milestone is None:
-        raise ValueError("Milestone not found.")
+    # if milestone is None:
+    #     raise ValueError("Milestone not found.")
 
     result = await db.scalars(
         select(Ticket)
         .where(
             Ticket.project_id == project_id,
-            Ticket.milestone_id == milestone.id,
+            Ticket.milestone_id == milestone_id,
         )
         .order_by(Ticket.created_at.desc())
     )

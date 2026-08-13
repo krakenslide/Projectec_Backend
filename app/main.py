@@ -21,6 +21,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from app.modules.websockets.router import router as websocket_router
 from app.modules.milestone.v1.router import router as milestone_router
 from app.modules.reports.v1.router import router as analytics_router
+from app.modules.activity.v1.router import router as activity_router
 
 import os
 from dotenv import load_dotenv
@@ -57,6 +58,7 @@ app.include_router(ticket_router)
 app.include_router(comment_router)
 app.include_router(websocket_router)
 app.include_router(analytics_router)
+app.include_router(activity_router)
 
 
 @app.get("/")

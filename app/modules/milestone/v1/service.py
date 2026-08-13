@@ -276,3 +276,150 @@ async def create_milestone(
         message="Milestone created successfully.",
         data=milestone,
     )
+
+
+
+from uuid import UUID
+
+from fastapi import HTTPException, status
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.milestone import Milestone
+from app.models.project import Project
+from app.models.ticket import Ticket
+from app.models.user import User
+from app.models.user_project import UserProject
+from app.modules.tickets.enum import TicketStatus
+
+from .schemas import (
+    ProjectMilestoneSummary,
+    ProjectMilestonesResponse,
+)
+
+
+async def list_project_milestoness(
+    db: AsyncSession,
+    project_id: UUID,
+    current_user: User,
+) -> ProjectMilestonesResponse:
+
+    # ---------------------------------------------------------
+    # Validate project membership
+    # ---------------------------------------------------------
+
+    membership = await db.scalar(
+        select(UserProject).where(
+            UserProject.project_id == project_id,
+            UserProject.user_id == current_user.id,
+        )
+    )
+
+    if membership is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not a member of this project.",
+        )
+
+    # ---------------------------------------------------------
+    # Make sure project exists
+    # ---------------------------------------------------------
+
+    project_exists = await db.scalar(
+        select(Project.id).where(
+            Project.id == project_id,
+        )
+    )
+
+    if project_exists is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Project not found.",
+        )
+
+    # ---------------------------------------------------------
+    # Get all milestones and aggregate their tickets
+    # ---------------------------------------------------------
+
+    result = await db.execute(
+        select(
+            Milestone.id,
+            Milestone.name,
+
+            func.min(
+                Ticket.expected_start_date
+            ).label("expected_start_date"),
+
+            func.max(
+                Ticket.expected_end_date
+            ).label("expected_end_date"),
+
+            func.count(
+                Ticket.id
+            ).label("total_tickets"),
+
+            func.count(
+                Ticket.id
+            ).filter(
+                Ticket.status.in_(
+                    [
+                        TicketStatus.DONE,
+                        TicketStatus.CLOSED,
+                    ]
+                )
+            ).label("completed_tickets"),
+        )
+        .outerjoin(
+            Ticket,
+            Ticket.milestone_id == Milestone.id,
+        )
+        .where(
+            Milestone.project_id == project_id,
+        )
+        .group_by(
+            Milestone.id,
+            Milestone.name,
+        )
+        .order_by(
+            Milestone.name.asc()
+        )
+    )
+
+    rows = result.all()
+
+    data = []
+
+    for row in rows:
+
+        total_tickets = row.total_tickets or 0
+        completed_tickets = row.completed_tickets or 0
+
+        if total_tickets == 0:
+            progress_percentage = 0.0
+        else:
+            progress_percentage = (
+                completed_tickets
+                / total_tickets
+            ) * 100
+
+        data.append(
+            ProjectMilestoneSummary(
+                id=row.id,
+                name=row.name,
+                expected_start_date=row.expected_start_date,
+                expected_end_date=row.expected_end_date,
+                progress_percentage=round(
+                    progress_percentage,
+                    2,
+                ),
+                total_tickets=total_tickets,
+                completed_tickets=completed_tickets,
+            )
+        )
+
+    return ProjectMilestonesResponse(
+        success=True,
+        status_code=status.HTTP_200_OK,
+        message="Project milestones retrieved successfully.",
+        data=data,
+    )
