@@ -9,7 +9,7 @@ class ActivitySchema(BaseModel):
 
     id: UUID
     ticket_id: UUID
-    activity_type: str
+    action_type: str
     field_name: str | None
     old_value: str | None
     new_value: str | None
