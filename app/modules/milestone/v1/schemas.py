@@ -45,3 +45,23 @@ class MilestoneProgressResponse(BaseModel):
     status_code: int
     message: str
     data: list[MilestoneProgressPoint]
+
+
+class ProjectMilestoneSummary(BaseModel):
+    id: UUID
+    name: str
+
+    expected_start_date: datetime | None
+    expected_end_date: datetime | None
+
+    progress_percentage: float
+
+    total_tickets: int
+    completed_tickets: int
+
+
+class ProjectMilestonesResponse(BaseModel):
+    success: bool
+    status_code: int
+    message: str
+    data: list[ProjectMilestoneSummary]
