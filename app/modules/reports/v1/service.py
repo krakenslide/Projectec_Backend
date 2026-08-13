@@ -200,6 +200,11 @@ async def get_developer_daily_summary(
         # Analyze activities
         # -----------------------------------------------------
 
+        # 3 conditions for status to be changed either 
+        # 1. hours were logged
+        # 2. ticket status was changed open to close etc
+        # 3. Comment was done
+        
         for activity in activities:
             if activity.field_name == "status":
 
@@ -213,6 +218,7 @@ async def get_developer_daily_summary(
                     finished = True
 
             elif activity.field_name == "hours_logged":
+                status_changed = True
                 previous_status = ticket.status
 
                 try:
@@ -231,7 +237,6 @@ async def get_developer_daily_summary(
         # -----------------------------------------------------
         # Convert comments to response objects
         # -----------------------------------------------------
-
         comment_data = [
             DeveloperCommentSummary(
                 id=comment.id,
@@ -240,7 +245,9 @@ async def get_developer_daily_summary(
             )
             for comment in comments
         ]
-
+        if(len(comment_data)>0):
+            status_changed = True
+            
         report.append(
             DeveloperTicketSummary(
                 project_name=project_name,
