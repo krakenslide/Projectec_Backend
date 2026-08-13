@@ -67,13 +67,13 @@ async def list_project_milestones_endpoint(
 )
 async def get_milestone_progress_endpoint(
     project_id: UUID,
-    milestone_name: str,
+    milestone_id: UUID,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     return await get_milestone_progress(
         db=db,
         project_id=project_id,
-        milestone_name=milestone_name,
+        milestone_id=milestone_id,
         current_user=current_user,
     )

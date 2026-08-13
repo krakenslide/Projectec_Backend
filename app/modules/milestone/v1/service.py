@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from uuid import UUID
-
+from fastapi import HTTPException
 from fastapi import status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -58,7 +58,7 @@ async def list_project_milestones(
 async def get_milestone_progress(
     db: AsyncSession,
     project_id: UUID,
-    milestone_name: str,
+    milestone_id: UUID,
     current_user: User,
 ) -> MilestoneProgressResponse:
 
@@ -68,22 +68,22 @@ async def get_milestone_progress(
         user_id=current_user.id,
     )
 
-    milestone = await db.scalar(
-        select(Milestone)
-        .where(
-            Milestone.project_id == project_id,
-            Milestone.name == milestone_name,
-        )
-    )
+    # milestone = await db.scalar(
+    #     select(Milestone)
+    #     .where(
+    #         Milestone.project_id == project_id,
+    #         Milestone.name == milestone_name,
+    #     )
+    # )
 
-    if milestone is None:
-        raise ValueError("Milestone not found.")
+    # if milestone is None:
+    #     raise ValueError("Milestone not found.")
 
     result = await db.scalars(
         select(Ticket)
         .where(
             Ticket.project_id == project_id,
-            Ticket.milestone_id == milestone.id,
+            Ticket.milestone_id == milestone_id,
         )
     )
 

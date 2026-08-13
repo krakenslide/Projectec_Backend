@@ -194,6 +194,7 @@ async def get_developer_daily_summary(
         status_changed = False
         finished = False
         hours_logged = 0
+        previous_status = ""
 
         # -----------------------------------------------------
         # Analyze activities
@@ -203,6 +204,7 @@ async def get_developer_daily_summary(
             if activity.field_name == "status":
 
                 status_changed = True
+                previous_status = activity.old_value
 
                 if (
                     activity.new_value is not None
@@ -211,6 +213,7 @@ async def get_developer_daily_summary(
                     finished = True
 
             elif activity.field_name == "hours_logged":
+                previous_status = ticket.status
 
                 try:
                     hours_logged += (
@@ -222,6 +225,8 @@ async def get_developer_daily_summary(
                     import traceback
                     traceback.print_exc()
                     pass
+            else:
+                previous_status = ticket.status
 
         # -----------------------------------------------------
         # Convert comments to response objects
@@ -241,6 +246,7 @@ async def get_developer_daily_summary(
                 project_name=project_name,
                 ticket_name=ticket.title,
                 status_changed=status_changed,
+                previous_status= previous_status,
                 current_status=ticket.status,
                 finished=finished,
                 hours_logged=hours_logged,

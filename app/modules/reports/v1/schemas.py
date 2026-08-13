@@ -13,6 +13,7 @@ class DeveloperTicketSummary(BaseModel):
     ticket_name: str
 
     status_changed: bool
+    previous_status : str = ""
     current_status: str
     finished: bool
     hours_logged: int
