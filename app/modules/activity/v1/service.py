@@ -17,8 +17,6 @@ async def list_ticket_activities(
     db: AsyncSession,
     ticket_id: UUID,
 ) -> TicketActivitiesResponse:
-
-    # Make sure ticket exists
     ticket = await db.scalar(
         select(Ticket).where(
             Ticket.id == ticket_id,

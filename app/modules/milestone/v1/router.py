@@ -17,7 +17,6 @@ from .schemas import (
 from .service import (
     create_milestone,
     get_milestone_progress,
-    list_project_milestones,
     list_project_milestoness
 )
 
@@ -43,21 +42,6 @@ async def create_milestone_endpoint(
         db=db,
         project_id=project_id,
         data=data,
-        current_user=current_user,
-    )
-
-@router.get(
-    "/projects/{project_id}",
-    response_model=ProjectMilestonesResponse,
-)
-async def list_project_milestones_endpoint(
-    project_id: UUID,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    return await list_project_milestones(
-        db=db,
-        project_id=project_id,
         current_user=current_user,
     )
 
