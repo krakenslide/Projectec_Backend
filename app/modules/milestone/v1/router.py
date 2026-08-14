@@ -78,3 +78,32 @@ async def list_project_milestones_endpoint(
         project_id=project_id,
         current_user=current_user,
     )
+
+
+from .schemas import (
+    UserOrganizationTicketSummaryResponse,
+)
+
+
+from .service import (
+    get_user_organization_ticket_summary,
+)
+
+
+
+@router.get(
+    "/organizations/{organization_id}/users/{user_id}/milestone-ticket-summary",
+    response_model=UserOrganizationTicketSummaryResponse,
+)
+async def get_user_organization_ticket_summary_endpoint(
+    organization_id: UUID,
+    user_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user),
+):
+    return await get_user_organization_ticket_summary(
+        db=db,
+        organization_id=organization_id,
+        user_id=user_id,
+        current_user=current_user,
+    )

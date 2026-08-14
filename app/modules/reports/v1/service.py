@@ -56,7 +56,7 @@ def get_report_window() -> tuple[datetime, datetime]:
 
     today_9am = datetime.combine(
         now.date(),
-        time(9, 0),
+        time(7, 0),
         tzinfo=timezone.utc,
     )
 
@@ -67,6 +67,9 @@ def get_report_window() -> tuple[datetime, datetime]:
         start = today_9am
         end = today_9am + timedelta(days=1)
 
+    print("ROLEX")
+    print(start)
+    print(end)
     return start, end
 
 
@@ -132,35 +135,50 @@ async def get_developer_daily_summary(
     # within this organization.
     # ---------------------------------------------------------
 
+    # result = await db.execute(
+    #     select(
+    #         Ticket,
+    #         Project.name,
+    #     )
+    #     .join(
+    #         Project,
+    #         Project.id == Ticket.project_id,
+    #     )
+    #     .where(
+    #         Project.organization_id == organization_id,
+    #         Ticket.assigned_to == user_id,
+    #     )
+    # )
+
     result = await db.execute(
-        select(
-            Ticket,
-            Project.name,
+            select(
+                Ticket,
+                Project.name,
+            )
+            .join(
+                Project,
+                Project.id == Ticket.project_id,
+            )
+            .where(
+                Project.organization_id == organization_id
+            )
         )
-        .join(
-            Project,
-            Project.id == Ticket.project_id,
-        )
-        .where(
-            Project.organization_id == organization_id,
-            Ticket.assigned_to == user_id,
-        )
-    )
 
     ticket_rows = result.all()
+    print("WHYNOT")
+    # print(ticket_rows[0].__dict__)
+    for row in ticket_rows:
+        print("WHYNOT2")
+        print(row.Ticket.__dict__)
+        #print(row.ticket_id)
 
     report: list[DeveloperTicketSummary] = []
 
-    # ---------------------------------------------------------
-    # Process every ticket
-    # ---------------------------------------------------------
-
     for ticket, project_name in ticket_rows:
-
-        # -----------------------------------------------------
-        # Activities for this ticket during report window
-        # -----------------------------------------------------
-
+        print("SHERLOCK")
+        print(ticket.id)
+        print(start)
+        print(end)
         activities = (
             await db.scalars(
                 select(Activity)
@@ -168,6 +186,7 @@ async def get_developer_daily_summary(
                     Activity.ticket_id == ticket.id,
                     Activity.created_at >= start,
                     Activity.created_at < end,
+                    Activity.created_by == user_id,
                 )
                 .order_by(Activity.created_at.asc())
             )
@@ -204,8 +223,11 @@ async def get_developer_daily_summary(
         # 1. hours were logged
         # 2. ticket status was changed open to close etc
         # 3. Comment was done
-        
+        print("WHAT THE HELL")
+        print(len(activities))
         for activity in activities:
+            print("CHECK MAADY")
+            print(activity.field_name)
             if activity.field_name == "status":
 
                 status_changed = True
@@ -247,7 +269,8 @@ async def get_developer_daily_summary(
         ]
         if(len(comment_data)>0):
             status_changed = True
-            
+
+        
         report.append(
             DeveloperTicketSummary(
                 project_name=project_name,

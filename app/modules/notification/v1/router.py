@@ -18,6 +18,7 @@ from .service import (
     mark_all_notifications_read,
 )
 
+
 router = APIRouter(
     prefix="/v1/notifications",
     tags=["Notifications"],
@@ -68,3 +69,4 @@ async def mark_all_read(
         db=db,
         current_user_id=current_user.id,
     )
+
