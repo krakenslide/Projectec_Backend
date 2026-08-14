@@ -270,19 +270,19 @@ async def get_developer_daily_summary(
         if(len(comment_data)>0):
             status_changed = True
 
-        
-        report.append(
-            DeveloperTicketSummary(
-                project_name=project_name,
-                ticket_name=ticket.title,
-                status_changed=status_changed,
-                previous_status= previous_status,
-                current_status=ticket.status,
-                finished=finished,
-                hours_logged=hours_logged,
-                comments=comment_data,
+        if(status_changed == True or ticket.assigned_to == user_id ):
+            report.append(
+                DeveloperTicketSummary(
+                    project_name=project_name,
+                    ticket_name=ticket.title,
+                    status_changed=status_changed,
+                    previous_status= previous_status,
+                    current_status=ticket.status,
+                    finished=finished,
+                    hours_logged=hours_logged,
+                    comments=comment_data,
+                )
             )
-        )
 
 
     total_tickets = len(report)
