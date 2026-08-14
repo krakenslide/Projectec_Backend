@@ -5,6 +5,7 @@ from fastapi import status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.user_organization import UserOrganization
 from app.models.milestone import Milestone
 from app.models.ticket import Ticket
 from app.models.project import Project
@@ -422,4 +423,142 @@ async def list_project_milestoness(
         status_code=status.HTTP_200_OK,
         message="Project milestones retrieved successfully.",
         data=data,
+    )
+
+
+
+
+
+from .schemas import (
+    UserOrganizationTicketSummary,
+    UserOrganizationTicketSummaryResponse,
+    UserTicketStatusSummary,
+)
+
+async def get_user_organization_ticket_summary(
+    db: AsyncSession,
+    organization_id: UUID,
+    user_id: UUID,
+    current_user: User,
+) -> UserOrganizationTicketSummaryResponse:
+
+    # ---------------------------------------------------------
+    # Validate requesting user's organization membership
+    # ---------------------------------------------------------
+
+    membership = await db.scalar(
+        select(UserOrganization).where(
+            UserOrganization.organization_id == organization_id,
+            UserOrganization.user_id == current_user.id,
+        )
+    )
+
+    if membership is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not a member of this organization.",
+        )
+
+    # ---------------------------------------------------------
+    # Make sure target user exists
+    # ---------------------------------------------------------
+
+    user = await db.scalar(
+        select(User).where(
+            User.id == user_id,
+        )
+    )
+
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found.",
+        )
+
+    # ---------------------------------------------------------
+    # Make sure target user belongs to organization
+    # ---------------------------------------------------------
+
+    target_membership = await db.scalar(
+        select(UserOrganization).where(
+            UserOrganization.organization_id == organization_id,
+            UserOrganization.user_id == user_id,
+        )
+    )
+
+    if target_membership is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User is not a member of this organization.",
+        )
+
+    # ---------------------------------------------------------
+    # Get ticket counts by status
+    # ---------------------------------------------------------
+
+    result = await db.execute(
+        select(
+            Ticket.status,
+            func.count(Ticket.id).label("count"),
+        )
+        .join(
+            Project,
+            Project.id == Ticket.project_id,
+        )
+        .where(
+            Project.organization_id == organization_id,
+            Ticket.assigned_to == user_id,
+        )
+        .group_by(
+            Ticket.status,
+        )
+    )
+
+    rows = result.all()
+
+    status_counts = {
+        row.status: row.count
+        for row in rows
+    }
+
+    total_tickets = sum(
+        status_counts.values()
+    )
+
+    # ---------------------------------------------------------
+    # Return all known statuses, including zero counts
+    # ---------------------------------------------------------
+
+    ordered_statuses = [
+        "To Do",
+        "In Progress",
+        "In Review",
+        "Testing",
+        "Done",
+        "Closed",
+    ]
+
+    data = [
+        UserTicketStatusSummary(
+            status=ticket_status,
+            count=status_counts.get(
+                ticket_status,
+                0,
+            ),
+        )
+        for ticket_status in ordered_statuses
+    ]
+
+    summary = UserOrganizationTicketSummary(
+        user_id=user_id,
+        organization_id=organization_id,
+        total_tickets=total_tickets,
+        status_counts=data,
+    )
+
+    return UserOrganizationTicketSummaryResponse(
+        success=True,
+        status_code=status.HTTP_200_OK,
+        message="User ticket summary retrieved successfully.",
+        data=summary,
     )

@@ -11,7 +11,6 @@ class DeveloperCommentSummary(BaseModel):
 class DeveloperTicketSummary(BaseModel):
     project_name: str
     ticket_name: str
-
     status_changed: bool
     previous_status : str = ""
     current_status: str

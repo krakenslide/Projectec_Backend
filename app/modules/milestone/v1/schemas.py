@@ -65,3 +65,24 @@ class ProjectMilestonesResponse(BaseModel):
     status_code: int
     message: str
     data: list[ProjectMilestoneSummary]
+
+
+
+class UserTicketStatusSummary(BaseModel):
+    status: str
+    count: int
+
+
+class UserOrganizationTicketSummary(BaseModel):
+    user_id: UUID
+    organization_id: UUID
+
+    total_tickets: int
+    status_counts: list[UserTicketStatusSummary]
+
+
+class UserOrganizationTicketSummaryResponse(BaseModel):
+    success: bool
+    status_code: int
+    message: str
+    data: UserOrganizationTicketSummary
