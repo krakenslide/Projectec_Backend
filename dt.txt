@@ -325,3 +325,12 @@ ORDER BY o.name, p.name, u.name;
 
 WEBSOCKET ENDPOINT FOR TESTING
 ws://127.0.0.1:8000/ws/notifications?token=<token>
+
+
+
+Install cloudflare tunnel on your machine
+run the below command
+cloudflared tunnel --url http://localhost:5173
+
+you will get a temporary domain
+you can test your application
