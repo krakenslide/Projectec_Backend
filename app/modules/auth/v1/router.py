@@ -13,7 +13,7 @@ from app.modules.auth.service import (
     create_access_token,
 )
 from app.modules.auth.deps import get_current_user
-from app.modules.mailer.service import is_valid_email
+# from app.modules.mailer.service import is_valid_email
 from fastapi import Request
 from app.modules.auth.v1.google import oauth
 
@@ -22,8 +22,8 @@ router = APIRouter(prefix="/v1/auth", tags=["Auth"])
 
 @router.post("/register", response_model=RegisterResponse)
 async def register(request: RegisterRequest, db: AsyncSession = Depends(get_db)):
-    if await is_valid_email(request.email) == False:
-        return RegisterResponse(success=False, status_code=422, message="Invalid Email")
+    # if await is_valid_email(request.email) == False:
+    #     return RegisterResponse(success=False, status_code=422, message="Invalid Email")
 
     existing_user = await get_user_by_email(db, request.email)
     if existing_user:
