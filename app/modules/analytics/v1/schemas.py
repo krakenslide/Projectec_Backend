@@ -1,7 +1,7 @@
-from datetime import datetime
+from datetime import datetime, date
 from uuid import UUID
-
 from pydantic import BaseModel
+from datetime import date
 
 class DeveloperCommentSummary(BaseModel):
     id: UUID
@@ -41,3 +41,35 @@ class DeveloperDailySummaryResponse(BaseModel):
     status_code: int
     message: str
     data: DeveloperDailySummary
+
+
+
+class EngagementTicketSchema(BaseModel):
+    ticket_id: UUID
+    ticket_key: str
+    title: str
+
+    # Dates actually used to render the Gantt bar
+    start_date: date
+    end_date: date
+
+    # Original dates, useful for tooltips/details in frontend
+    expected_start_date: date | None = None
+    actual_start_date: date | None = None
+
+    expected_end_date: date | None = None
+    actual_end_date: date | None = None
+
+
+class MemberEngagementSchema(BaseModel):
+    member_id: UUID
+    member_name: str
+    tickets: list[EngagementTicketSchema]
+
+
+class OrganizationEngagementGanttResponse(BaseModel):
+    success: bool
+    status_code: int
+    message: str
+    data: list[MemberEngagementSchema]
+    count: int

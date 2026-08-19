@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, time, timezone
+from datetime import datetime, timedelta, time, timezone, date
 from uuid import UUID
 
 from fastapi import status
@@ -39,8 +39,6 @@ from app.models.user_project import UserProject
 
 def get_report_window() -> tuple[datetime, datetime]:
     """
-    Returns the reporting window used for the daily developer report.
-
     Report runs from:
         Previous day 09:00
         ->
@@ -67,9 +65,6 @@ def get_report_window() -> tuple[datetime, datetime]:
         start = today_9am
         end = today_9am + timedelta(days=1)
 
-    print("ROLEX")
-    print(start)
-    print(end)
     return start, end
 
 
@@ -99,10 +94,6 @@ async def get_developer_daily_summary(
     current_user: User,
 ) -> DeveloperDailySummaryResponse:
 
-    # ---------------------------------------------------------
-    # Validate that the developer belongs to the organization
-    # ---------------------------------------------------------
-
     developer_membership = await db.scalar(
         select(UserOrganization).where(
             UserOrganization.organization_id == organization_id,
@@ -123,10 +114,6 @@ async def get_developer_daily_summary(
 
     if developer is None:
         raise ValueError("User not found.")
-
-    # ---------------------------------------------------------
-    # Reporting window
-    # ---------------------------------------------------------
 
     start, end = get_report_window()
 
@@ -192,10 +179,6 @@ async def get_developer_daily_summary(
             )
         ).all()
 
-        # -----------------------------------------------------
-        # Comments made by this developer during report window
-        # -----------------------------------------------------
-
         comments = (
             await db.scalars(
                 select(Comment)
@@ -215,9 +198,6 @@ async def get_developer_daily_summary(
         hours_logged = 0
         previous_status = ""
 
-        # -----------------------------------------------------
-        # Analyze activities
-        # -----------------------------------------------------
 
         # 3 conditions for status to be changed either 
         # 1. hours were logged
@@ -256,9 +236,6 @@ async def get_developer_daily_summary(
             else:
                 previous_status = ticket.status
 
-        # -----------------------------------------------------
-        # Convert comments to response objects
-        # -----------------------------------------------------
         comment_data = [
             DeveloperCommentSummary(
                 id=comment.id,
@@ -330,11 +307,6 @@ async def generate_organization_daily_report(
     current_user: User,
 ) -> BytesIO:
 
-    # ---------------------------------------------------------
-    # Get all engineers belonging to projects in this
-    # organization.
-    # ---------------------------------------------------------
-
     result = await db.execute(
         select(User)
         .join(
@@ -358,19 +330,12 @@ async def generate_organization_daily_report(
 
     engineers = result.scalars().all()
 
-    # ---------------------------------------------------------
-    # Create workbook
-    # ---------------------------------------------------------
-
     workbook = Workbook()
 
     # Remove default sheet
     default_sheet = workbook.active
     workbook.remove(default_sheet)
 
-    # ---------------------------------------------------------
-    # Styles
-    # ---------------------------------------------------------
 
     header_fill = PatternFill(
         "solid",
@@ -416,10 +381,6 @@ async def generate_organization_daily_report(
         bottom=thin,
     )
 
-    # ---------------------------------------------------------
-    # Generate sheet for every engineer
-    # ---------------------------------------------------------
-
     for engineer in engineers:
 
         summary_response = await get_developer_daily_summary(
@@ -450,10 +411,6 @@ async def generate_organization_daily_report(
             title=sheet_name,
         )
 
-        # -----------------------------------------------------
-        # Headers
-        # -----------------------------------------------------
-
         labels = [
             "Project Name",
             "Ticket Name",
@@ -475,10 +432,6 @@ async def generate_organization_daily_report(
             cell.fill = left_fill
             cell.font = Font(bold=True)
             cell.border = border
-
-        # -----------------------------------------------------
-        # Ticket data
-        # -----------------------------------------------------
 
         for column_number, ticket in enumerate(
             summary.tickets,
@@ -545,9 +498,6 @@ async def generate_organization_daily_report(
                 else:
                     cell.fill = white_fill
 
-        # -----------------------------------------------------
-        # Column widths
-        # -----------------------------------------------------
 
         worksheet.column_dimensions["A"].width = 22
 
@@ -559,9 +509,7 @@ async def generate_organization_daily_report(
                 get_column_letter(column_number)
             ].width = 24
 
-    # ---------------------------------------------------------
-    # If organization has no engineers
-    # ---------------------------------------------------------
+
 
     if not engineers:
 
@@ -573,9 +521,6 @@ async def generate_organization_daily_report(
             "No engineers found in this organization."
         )
 
-    # ---------------------------------------------------------
-    # Write workbook to memory
-    # ---------------------------------------------------------
 
     output = BytesIO()
 
@@ -584,3 +529,235 @@ async def generate_organization_daily_report(
     output.seek(0)
 
     return output
+
+
+
+
+
+
+from datetime import date, datetime
+from uuid import UUID
+
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.ticket import Ticket
+from app.models.user import User
+from app.models.user_organization import UserOrganization
+
+
+def to_date(
+    value: date | datetime | None,
+) -> date | None:
+    """
+    Convert a datetime/date value to a date.
+
+    Database fields are expected to be datetime values,
+    while the analytics API exposes date-level granularity.
+    """
+
+    if value is None:
+        return None
+
+    if isinstance(value, datetime):
+        return value.date()
+
+    return value
+
+
+def get_effective_start_date(
+    expected_start_date: date | datetime | None,
+    actual_start_date: date | datetime | None,
+) -> date | None:
+    """
+    Effective Gantt start date:
+
+        min(expected_start_date, actual_start_date)
+
+    If only one value exists, use that value.
+    """
+
+    expected_start_date = to_date(expected_start_date)
+    actual_start_date = to_date(actual_start_date)
+
+    if expected_start_date and actual_start_date:
+        return min(
+            expected_start_date,
+            actual_start_date,
+        )
+
+    return expected_start_date or actual_start_date
+
+
+def get_effective_end_date(
+    expected_end_date: date | datetime | None,
+    actual_end_date: date | datetime | None,
+) -> date | None:
+    """
+    Effective Gantt end date:
+
+        max(expected_end_date, actual_end_date)
+
+    If only one value exists, use that value.
+    """
+
+    expected_end_date = to_date(expected_end_date)
+    actual_end_date = to_date(actual_end_date)
+
+    if expected_end_date and actual_end_date:
+        return max(
+            expected_end_date,
+            actual_end_date,
+        )
+
+    return expected_end_date or actual_end_date
+
+
+async def get_organization_engagement_gantt(
+    session: AsyncSession,
+    organization_id: UUID,
+) -> list[dict]:
+    """
+    Generate engagement Gantt data for every member
+    of an organization.
+
+    A member's engagement consists of tickets assigned
+    to that member.
+
+    Effective ticket start:
+        min(expected_start_date, actual_start_date)
+
+    Effective ticket end:
+        max(expected_end_date, actual_end_date)
+
+    Members without tickets are also returned with an
+    empty tickets list.
+    """
+
+    stmt = (
+        select(
+            User.id.label("member_id"),
+            User.name.label("first_name"),
+
+            Ticket.id.label("ticket_id"),
+            Ticket.ticket_number.label("ticket_key"),
+            Ticket.title.label("title"),
+
+            Ticket.expected_start_date.label(
+                "expected_start_date"
+            ),
+            Ticket.actual_start_date.label(
+                "actual_start_date"
+            ),
+
+            Ticket.expected_end_date.label(
+                "expected_end_date"
+            ),
+            Ticket.actual_end_date.label(
+                "actual_end_date"
+            ),
+        )
+        .join(
+            UserOrganization,
+            UserOrganization.user_id == User.id,
+        )
+        .outerjoin(
+            Ticket,
+            Ticket.assigned_to == User.id,
+        )
+        .where(
+            UserOrganization.organization_id == organization_id,
+        )
+        .order_by(
+            User.name,
+            Ticket.expected_start_date,
+        )
+    )
+
+    result = await session.execute(stmt)
+
+    rows = result.all()
+
+    members: dict[UUID, dict] = {}
+
+    for row in rows:
+
+        # --------------------------------------------------
+        # Create member entry
+        # --------------------------------------------------
+
+        if row.member_id not in members:
+
+            first_name = row.first_name or ""
+
+
+            member_name = (
+                f"{first_name}"
+            ).strip()
+
+            members[row.member_id] = {
+                "member_id": row.member_id,
+                "member_name": member_name,
+                "tickets": [],
+            }
+
+        # --------------------------------------------------
+        # No ticket assigned to this member
+        # --------------------------------------------------
+
+        if row.ticket_id is None:
+            continue
+
+        # --------------------------------------------------
+        # Calculate effective Gantt dates
+        # --------------------------------------------------
+
+        start_date = get_effective_start_date(
+            expected_start_date=row.expected_start_date,
+            actual_start_date=row.actual_start_date,
+        )
+
+        end_date = get_effective_end_date(
+            expected_end_date=row.expected_end_date,
+            actual_end_date=row.actual_end_date,
+        )
+
+        # --------------------------------------------------
+        # Cannot render a Gantt bar without both dates
+        # --------------------------------------------------
+
+        if start_date is None or end_date is None:
+            continue
+
+        # --------------------------------------------------
+        # Add ticket
+        # --------------------------------------------------
+
+        members[row.member_id]["tickets"].append(
+            {
+                "ticket_id": row.ticket_id,
+                "ticket_key": row.ticket_key,
+                "title": row.title,
+
+                # Effective Gantt dates
+                "start_date": start_date,
+                "end_date": end_date,
+
+                # Original dates
+                "expected_start_date": to_date(
+                    row.expected_start_date
+                ),
+                "actual_start_date": to_date(
+                    row.actual_start_date
+                ),
+
+                "expected_end_date": to_date(
+                    row.expected_end_date
+                ),
+                "actual_end_date": to_date(
+                    row.actual_end_date
+                ),
+            }
+        )
+
+    return list(members.values())

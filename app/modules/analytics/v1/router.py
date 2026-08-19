@@ -14,6 +14,12 @@ from .service import (
     generate_organization_daily_report,
     get_developer_daily_summary,
 )
+from .schemas import (
+    OrganizationEngagementGanttResponse,
+)
+from .service import (
+    get_organization_engagement_gantt,
+)
 
 
 router = APIRouter(
@@ -66,4 +72,27 @@ async def get_organization_daily_summary_excel(
                 'filename="Daily Engineer Report.xlsx"'
             )
         },
+    )
+
+
+
+@router.get(
+    "/organizations/{organization_id}/engagement-gantt",
+    response_model=OrganizationEngagementGanttResponse,
+)
+async def get_engagement_gantt(
+    organization_id: UUID,
+    session: AsyncSession = Depends(get_db),
+):
+    data = await get_organization_engagement_gantt(
+        session=session,
+        organization_id=organization_id,
+    )
+
+    return OrganizationEngagementGanttResponse(
+        success=True,
+        status_code=200,
+        message="Organization engagement data retrieved successfully",
+        data=data,
+        count=len(data),
     )
