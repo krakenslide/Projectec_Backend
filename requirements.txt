@@ -41,6 +41,7 @@ openpyxl==3.1.5
 packaging==26.0
 pandas==3.0.1
 psycopg2-binary==2.9.12
+psycopg[c]==3.2.4
 pyasn1==0.6.3
 pycparser==3.0
 pydantic==2.12.5
@@ -63,5 +64,5 @@ typing-inspection==0.4.2
 typing_extensions==4.15.0
 tzdata==2025.3
 urllib3==2.7.0
-uvicorn==0.23.2
+uvicorn[standard]==0.23.2
 wheel==0.46.3
