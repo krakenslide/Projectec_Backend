@@ -11,19 +11,20 @@ class CreateMilestoneRequest(BaseModel):
     )
 
 
-class MilestoneResponse(BaseModel):
-    success: bool
-    status_code: int
-    message: str
-    data: MilestoneSchema
-
-
 class MilestoneSchema(BaseModel):
     # TODO Why this model_config works?
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID
     name: str
+
+    
+class MilestoneResponse(BaseModel):
+    success: bool
+    status_code: int
+    message: str
+    data: MilestoneSchema
+
 
 
 class ProjectMilestonesResponse(BaseModel):
